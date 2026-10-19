@@ -57,8 +57,10 @@ export function TimelineImport({ visits }: { visits: Visit[] }) {
     <section>
       <h2>Import Google Maps Timeline</h2>
       <p className="muted">
-        On your phone, open Google Maps, tap your profile picture, then Your Timeline, the ⋮ menu, Location and privacy
-        settings, and <strong>Export Timeline data</strong>. Choose the saved file here. Older Google Takeout Location
+        On your Android phone, open the Settings app, then Location, Location services, Timeline, and{' '}
+        <strong>Export Timeline data</strong>. On some phones it is instead in Google Maps: your profile picture, Your
+        Timeline, the ⋮ menu, Location and privacy settings. On an iPhone, it is in Google Maps under Settings, Personal
+        content, <strong>Export Timeline data</strong>. Choose the saved file here. Older Google Takeout Location
         History exports (.zip, or the .json files inside) work too. Only places where you stopped are counted, one visit
         per commune and day.
       </p>
