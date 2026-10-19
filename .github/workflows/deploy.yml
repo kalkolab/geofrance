@@ -32,6 +32,8 @@ jobs:
       - run: npm run build:geo
       - run: npm test
       - run: npm run build
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
       - if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:

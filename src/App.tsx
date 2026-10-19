@@ -4,6 +4,7 @@ import { FranceMap, type Level } from './components/FranceMap'
 import { PlacePanel } from './components/PlacePanel'
 import { SettingsView } from './components/SettingsView'
 import { StatsView } from './components/StatsView'
+import { SyncButton } from './components/SyncButton'
 import { geocoder, loadRef } from './data'
 import { useVisits } from './db'
 import type { Location } from './lib/geocoder'
@@ -44,6 +45,7 @@ export function App() {
         <p className="summary">
           {stats.communes.visited} communes · {stats.departements.visited} departments · {stats.regions.visited} regions
         </p>
+        <SyncButton />
         <nav>
           {(['map', 'stats', 'settings'] as const).map((t) => (
             <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>

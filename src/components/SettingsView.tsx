@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { db, exportVisits, importVisits, type Visit } from '../db'
+import { deleteVisits, exportVisits, importVisits, type Visit } from '../db'
 import type { RefData } from '../lib/ref'
 import { CsvImport } from './CsvImport'
+import { AccountSection } from './SyncButton'
 import { TimelineImport } from './TimelineImport'
 
 interface Props {
@@ -34,19 +35,20 @@ export function SettingsView({ geo, visited, visits }: Props) {
   }
 
   async function deleteAll() {
-    if (confirm(`Delete all ${visitCount} visits from this device? This cannot be undone.`)) {
-      await db.visits.clear()
+    if (confirm(`Delete all ${visitCount} visits? If you sync with Google Drive, they are removed on your other devices too.`)) {
+      await deleteVisits(visits)
       setMessage('All visits deleted.')
     }
   }
 
   return (
     <div className="page">
+      <AccountSection />
       <section>
         <h2>Your data</h2>
         <p className="muted">
-          Your {visitCount} visits are stored only in this browser. Export them to keep a copy or move them to another
-          device.
+          Your {visitCount} visits are stored in this browser, and in your Google Drive if you sign in. Export them to
+          keep a copy of your own.
         </p>
         <div className="actions start">
           <button onClick={download}>Export visits</button>
@@ -64,7 +66,7 @@ export function SettingsView({ geo, visited, visits }: Props) {
       <CsvImport geo={geo} visited={visited} />
       <section>
         <h2>Coming next</h2>
-        <p className="muted">Google Photos import, and Google sign-in with Drive backup to share visits between devices.</p>
+        <p className="muted">Google Photos import.</p>
       </section>
       <section>
         <h2>About</h2>
