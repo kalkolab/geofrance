@@ -1,7 +1,15 @@
 import { useState } from 'react'
 import { db, exportVisits, importVisits } from '../db'
+import type { RefData } from '../lib/ref'
+import { CsvImport } from './CsvImport'
 
-export function SettingsView({ visitCount }: { visitCount: number }) {
+interface Props {
+  geo: RefData
+  visited: Set<string>
+  visitCount: number
+}
+
+export function SettingsView({ geo, visited, visitCount }: Props) {
   const [message, setMessage] = useState('')
 
   async function download() {
@@ -50,6 +58,7 @@ export function SettingsView({ visitCount }: { visitCount: number }) {
         </div>
         {message && <p role="status">{message}</p>}
       </section>
+      <CsvImport geo={geo} visited={visited} />
       <section>
         <h2>Coming next</h2>
         <p className="muted">Google Maps Timeline import, Google Photos import, and Google sign-in with Drive backup.</p>

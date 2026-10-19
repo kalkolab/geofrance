@@ -1,7 +1,7 @@
 import Dexie, { liveQuery, type Table } from 'dexie'
 import { useEffect, useState } from 'react'
 
-export type VisitSource = 'manual' | 'timeline' | 'photo'
+export type VisitSource = 'manual' | 'csv' | 'timeline' | 'photo'
 
 export interface Visit {
   id?: number

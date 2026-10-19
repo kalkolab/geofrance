@@ -27,7 +27,7 @@ function Headline({ label, progress }: { label: string; progress: Progress }) {
   )
 }
 
-const SOURCE_LABEL = { manual: 'Manual', timeline: 'Timeline', photo: 'Photo' }
+const SOURCE_LABEL = { manual: 'Manual', csv: 'CSV import', timeline: 'Timeline', photo: 'Photo' }
 
 export function StatsView({ geo, stats, visits }: Props) {
   const [showAll, setShowAll] = useState(false)
