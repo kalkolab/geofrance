@@ -89,7 +89,7 @@ export function App() {
           )}
         </div>
         {tab === 'stats' && <StatsView geo={geo} stats={stats} visits={visits} />}
-        {tab === 'settings' && <SettingsView visitCount={visits.length} />}
+        {tab === 'settings' && <SettingsView geo={geo} visited={visited} visitCount={visits.length} />}
       </main>
     </div>
   )
