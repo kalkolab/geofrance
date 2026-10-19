@@ -47,8 +47,8 @@ Sync needs a Google OAuth client ID (it is public, not a secret):
    add your Google account under Audience → Test users.
 3. Under Clients, create an OAuth client of type **Web application** with these authorized JavaScript origins:
    `https://kalkolab.github.io` and `http://localhost:5173`.
-4. Copy the client ID into a repository variable named `GOOGLE_CLIENT_ID` (Settings → Secrets and variables →
-   Actions → Variables) and re-run the deploy. Locally, put `VITE_GOOGLE_CLIENT_ID=...` in `.env.local`.
+4. Copy the client ID into a variable named `GOOGLE_CLIENT_ID`, either on the repository (Settings → Secrets and variables →
+   Actions → Variables) or on the `github-pages` environment, and re-run the deploy. Locally, put `VITE_GOOGLE_CLIENT_ID=...` in `.env.local`.
 
 ## Data
 
