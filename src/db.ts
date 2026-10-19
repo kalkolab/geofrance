@@ -46,6 +46,9 @@ export async function exportVisits(): Promise<Blob> {
 
 // Restores an export, skipping visits that are already stored.
 export async function importVisits(text: string): Promise<number> {
+  if (!text.trimStart().startsWith('{')) {
+    throw new Error('This is not a GeoFrance export file. For a CSV of places, use "Import places from a CSV file" below.')
+  }
   const body = JSON.parse(text)
   if (body?.format !== EXPORT_FORMAT || !Array.isArray(body.visits)) throw new Error('Not a GeoFrance export file')
   const existing = new Set((await db.visits.toArray()).map(visitKey))
