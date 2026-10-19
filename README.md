@@ -11,11 +11,13 @@ Live site: https://kalkolab.github.io/geofrance/
 - Tap the map to see which commune is there and mark it as visited.
 - Add a visit by searching a city name or postcode, with an optional date and note.
 - Statistics: communes, departments and regions visited, completion per region, and a list of your visits.
+- Import a Google Maps Timeline export (Timeline.json from the Maps app, or Google Takeout Location History,
+  .zip or .json); places where you stopped become visits, one per commune and day.
 - Import places from a CSV file with `lat` and `lon` columns (semicolon or comma separated); points in France mark
   their commune as visited, and an optional `been` column filters out other rows.
 - Export, import and delete your visits. Installable as an app on Android (PWA) and usable offline once loaded.
 
-Planned next: Google Maps Timeline import, Google Photos import (via Google Takeout), Google sign-in with Drive backup.
+Planned next: Google Photos import (via Google Takeout), Google sign-in with Drive backup.
 
 ## Develop
 

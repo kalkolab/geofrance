@@ -40,3 +40,11 @@ describe('csv', () => {
     expect(plan).toEqual({ communes: [{ code: '75056', places: ['Paris', 'Louvre'] }], alreadyVisited: 1, outside: 2 })
   })
 })
+
+describe('been column', () => {
+  it('accepts tagged values such as "been,fave"', () => {
+    const r = parseCsv('lat;lon;city;been\n41.38;2.17;"Barcelona";"been,fave"\n48.85;2.35;"Paris";"want"\n')
+    expect(r.points.map((p) => p.label)).toEqual(['Barcelona'])
+    expect(r.notBeen).toBe(1)
+  })
+})

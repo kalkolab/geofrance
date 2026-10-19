@@ -59,7 +59,7 @@ export function parseCsv(text: string): CsvResult {
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue
     const cells = splitLine(lines[i], delimiter)
-    if (been >= 0 && cells[been] && cells[been].toLowerCase() !== 'been') {
+    if (been >= 0 && cells[been] && !cells[been].toLowerCase().split(/[,|]/).map((t) => t.trim()).includes('been')) {
       result.notBeen++
       continue
     }

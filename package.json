@@ -13,6 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "dexie": "^4.4.6",
+    "fflate": "^0.8.3",
     "maplibre-gl": "^6.15.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
