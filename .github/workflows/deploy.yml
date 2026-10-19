@@ -32,13 +32,9 @@ jobs:
       - run: npm run build:geo
       - run: npm test
       - run: npm run build
-        env:
-          VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-      - if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
 
+  # The Google client ID may be a variable of the github-pages environment, which only a job
+  # that deploys to it can read, so the published build is made here.
   deploy:
     if: github.event_name != 'pull_request'
     needs: build
@@ -47,5 +43,23 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: .cache/geo
+          key: geo-${{ hashFiles('scripts/build-geo.mjs') }}
+      - run: npm ci
+      - run: npm run build:geo
+      - run: npm run build
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+      - run: test -n "$(grep -rl apps.googleusercontent.com dist/assets)" || (echo "::error::GOOGLE_CLIENT_ID is not set, so Google sign-in is off" && exit 1)
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
       - id: deployment
         uses: actions/deploy-pages@v4
