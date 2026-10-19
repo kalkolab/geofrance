@@ -5,6 +5,7 @@ export type VisitSource = 'manual' | 'csv' | 'timeline' | 'photo'
 
 export interface Visit {
   id?: number
+  uid?: string // stable id shared across devices, set automatically when a visit is created
   commune: string // INSEE code
   date: string | null // YYYY-MM-DD, null when unknown
   source: VisitSource
@@ -12,12 +13,32 @@ export interface Visit {
   createdAt: string
 }
 
+// A deleted visit, remembered so the deletion also reaches your other devices.
+export interface Tombstone {
+  uid: string
+  deletedAt: string
+}
+
 class GeoFranceDB extends Dexie {
   visits!: Table<Visit, number>
+  deleted!: Table<Tombstone, string>
 
   constructor() {
     super('geofrance')
     this.version(1).stores({ visits: '++id, commune, date, source' })
+    this.version(2)
+      .stores({ visits: '++id, uid, commune, date, source', deleted: 'uid' })
+      .upgrade((tx) =>
+        tx
+          .table('visits')
+          .toCollection()
+          .modify((v: Visit) => {
+            v.uid ??= crypto.randomUUID()
+          }),
+      )
+    this.visits.hook('creating', (_key, visit) => {
+      visit.uid ??= crypto.randomUUID()
+    })
   }
 }
 
@@ -34,6 +55,14 @@ export function useVisits(): Visit[] | undefined {
 
 export function addVisit(commune: string, date: string | null, note?: string, source: VisitSource = 'manual') {
   return db.visits.add({ commune, date, source, note: note || undefined, createdAt: new Date().toISOString() })
+}
+
+export function deleteVisits(visits: Visit[]) {
+  const deletedAt = new Date().toISOString()
+  return db.transaction('rw', db.visits, db.deleted, async () => {
+    await db.deleted.bulkPut(visits.filter((v) => v.uid).map((v) => ({ uid: v.uid!, deletedAt })))
+    await db.visits.bulkDelete(visits.map((v) => v.id!))
+  })
 }
 
 export const EXPORT_FORMAT = 'geofrance-visits'

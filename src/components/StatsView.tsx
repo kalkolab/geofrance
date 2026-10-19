@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { db, type Visit } from '../db'
+import { deleteVisits, type Visit } from '../db'
 import type { RefData } from '../lib/ref'
 import type { Progress, Stats } from '../lib/stats'
 import { placeLabel } from './AddVisit'
@@ -82,7 +82,7 @@ export function StatsView({ geo, stats, visits }: Props) {
                       {v.note ? ` · ${v.note}` : ''}
                     </div>
                   </div>
-                  <button className="link" onClick={() => db.visits.delete(v.id!)} aria-label={`Delete visit to ${c?.name}`}>
+                  <button className="link" onClick={() => deleteVisits([v])} aria-label={`Delete visit to ${c?.name}`}>
                     Delete
                   </button>
                 </li>
