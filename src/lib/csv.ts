@@ -1,5 +1,7 @@
 // Reads a CSV of places with latitude and longitude columns, such as an export from a travel map app.
 
+import { t } from '../i18n'
+
 export interface CsvPoint {
   line: number
   lat: number
@@ -51,7 +53,7 @@ export function parseCsv(text: string): CsvResult {
   const find = (names: string[]) => header.findIndex((h) => names.includes(h))
   const lat = find(LAT)
   const lon = find(LON)
-  if (lat < 0 || lon < 0) throw new Error('The CSV needs a header row with "lat" and "lon" columns')
+  if (lat < 0 || lon < 0) throw new Error(t('errCsvHeader'))
   const label = find(LABEL)
   const been = header.indexOf('been')
 

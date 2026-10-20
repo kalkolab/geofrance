@@ -6,6 +6,8 @@
 // - Google Takeout "Semantic Location History" monthly files ("timelineObjects" with "placeVisit")
 // - Google Takeout Records.json (raw "locations"); stops are detected from points that stay put
 
+import { t } from '../i18n'
+
 export interface Stop {
   lat: number
   lon: number
@@ -115,5 +117,5 @@ export function parseTimeline(data: unknown): TimelineResult {
   if (isObject(data) && Array.isArray(data.locations)) {
     return { format: 'takeout-records', stops: detectStops(recordPoints(data.locations)) }
   }
-  throw new Error('This is not a Google Maps Timeline file')
+  throw new Error(t('errNotTimeline'))
 }

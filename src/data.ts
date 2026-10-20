@@ -1,12 +1,13 @@
 import type { FeatureCollection } from './lib/geo'
 import { Geocoder } from './lib/geocoder'
 import { parseRef, type RawRef, type RefData } from './lib/ref'
+import { t } from './i18n'
 
 const url = (path: string) => `${import.meta.env.BASE_URL}data/${path}`
 
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(url(path))
-  if (!res.ok) throw new Error(`Could not load ${path} (${res.status})`)
+  if (!res.ok) throw new Error(t('errLoad', { path, status: String(res.status) }))
   return res.json()
 }
 

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { addVisit } from '../db'
+import { useT } from '../i18n'
 import { searchCommunes, type Commune, type RefData } from '../lib/ref'
 
 interface Props {
@@ -17,24 +18,25 @@ export function AddVisit({ geo, initial, onDone }: Props) {
   const [note, setNote] = useState('')
   const [kept, setKept] = useState<string>()
   const results = useMemo(() => searchCommunes(geo, query), [geo, query])
+  const t = useT()
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!commune) return
     if (await addVisit(commune.code, date || null, note.trim())) onDone()
-    else setKept(`${commune.name} already has an earlier visit, which is kept. Only the first visit to each commune is stored.`)
+    else setKept(t('alreadyEarlier', { name: commune.name }))
   }
 
   return (
     <form className="panel add-visit" onSubmit={save}>
-      <h2>Add a visit</h2>
+      <h2>{t('addAVisit')}</h2>
       {commune ? (
         <div className="chosen">
           <span>
             <strong>{commune.name}</strong> {placeLabel(geo, commune)}
           </span>
           <button type="button" className="link" onClick={() => setCommune(undefined)}>
-            Change
+            {t('change')}
           </button>
         </div>
       ) : (
@@ -42,10 +44,10 @@ export function AddVisit({ geo, initial, onDone }: Props) {
           <input
             autoFocus
             type="search"
-            placeholder="City name or postcode"
+            placeholder={t('searchPlaceholder')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search a commune"
+            aria-label={t('searchLabel')}
           />
           {results.length > 0 && (
             <ul className="results">
@@ -61,22 +63,22 @@ export function AddVisit({ geo, initial, onDone }: Props) {
         </>
       )}
       <label className="row">
-        <span>Date (optional)</span>
+        <span>{t('dateOptional')}</span>
         <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} />
         {date && (
           <button type="button" className="link" onClick={() => setDate('')}>
-            Clear
+            {t('clear')}
           </button>
         )}
       </label>
-      <input type="text" placeholder="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
+      <input type="text" placeholder={t('noteOptional')} value={note} onChange={(e) => setNote(e.target.value)} />
       {kept && <p role="status">{kept}</p>}
       <div className="actions">
         <button type="button" onClick={onDone}>
-          Cancel
+          {t('cancel')}
         </button>
         <button type="submit" className="primary" disabled={!commune}>
-          Save visit
+          {t('saveVisit')}
         </button>
       </div>
     </form>

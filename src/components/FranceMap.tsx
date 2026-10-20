@@ -3,6 +3,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useEffect, useRef, useState } from 'react'
 import { geocoder, loadCommunes, loadDepartements, loadRegions } from '../data'
+import { useT } from '../i18n'
 import type { Location } from '../lib/geocoder'
 import type { RefData } from '../lib/ref'
 import type { Stats } from '../lib/stats'
@@ -241,6 +242,7 @@ export function FranceMap({ geo, stats, visited, level, selected, onPick }: Prop
 }
 
 function HoverLabel({ geo, hover, visited, showRegion }: { geo: RefData; hover: Hover; visited: Set<string>; showRegion: boolean }) {
+  const t = useT()
   const dep = geo.departement.get(hover.departement)
   const commune = hover.commune ? geo.commune.get(hover.commune) : undefined
   const region = dep && geo.region.get(dep.region)
@@ -251,7 +253,7 @@ function HoverLabel({ geo, hover, visited, showRegion }: { geo: RefData; hover: 
         <div>
           <strong>{commune.name}</strong>
           {postcodes.length > 0 && ` ${postcodes[0]}${postcodes.length > 1 ? '…' : ''}`}
-          {visited.has(commune.code) && <span className="tag">Visited</span>}
+          {visited.has(commune.code) && <span className="tag">{t('hoverVisited')}</span>}
         </div>
       )}
       {dep && (

@@ -7,6 +7,7 @@ import { useSyncExternalStore } from 'react'
 import { db } from './db'
 import { AuthError, CLIENT_ID, loadGoogle, readSyncFile, requestToken, revokeToken, userEmail, writeSyncFile, type Token } from './google'
 import { mergeVisits, signature, SYNC_FORMAT, type SyncedVisit } from './lib/sync'
+import { t } from './i18n'
 
 export type SyncStatus = 'unconfigured' | 'signed-out' | 'needs-tap' | 'syncing' | 'synced' | 'error'
 
@@ -128,7 +129,7 @@ class SyncManager {
     this.set({ status: 'syncing', error: undefined })
     try {
       const remote = await readSyncFile(token)
-      if (remote && remote.data.format !== SYNC_FORMAT) throw new Error('The file in Google Drive is not a GeoFrance sync file')
+      if (remote && remote.data.format !== SYNC_FORMAT) throw new Error(t('errSyncFile'))
       this.fileId = remote?.id ?? this.fileId
 
       const [localVisits, localDeleted] = await Promise.all([db.visits.toArray(), db.deleted.toArray()])
