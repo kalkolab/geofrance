@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { db, type Visit } from '../db'
+import { saveVisits, type Visit } from '../db'
 import type { GeocodeMessage, GeocodeRequest } from '../geocode.worker'
 import type { Stop } from '../lib/timeline'
 import { readTimelineFiles } from '../lib/timelineFiles'
@@ -11,7 +11,7 @@ type State =
   | { step: 'reading' }
   | { step: 'checking'; done: number; total: number }
   | { step: 'preview'; plan: VisitPlan }
-  | { step: 'done'; added: number; communes: number }
+  | { step: 'done'; communes: number; earlier: number }
   | { step: 'error'; message: string }
 
 const n = (count: number, word: string) => `${count.toLocaleString('fr-FR')} ${word}${count === 1 ? '' : 's'}`
@@ -46,9 +46,8 @@ export function TimelineImport({ visits }: { visits: Visit[] }) {
   }
 
   async function save(plan: VisitPlan) {
-    const createdAt = new Date().toISOString()
-    await db.visits.bulkAdd(plan.visits.map((v) => ({ ...v, source: 'timeline' as const, createdAt })))
-    setState({ step: 'done', added: plan.visits.length, communes: plan.newCommunes })
+    await saveVisits(plan.visits.map((v) => ({ ...v, source: 'timeline' as const })))
+    setState({ step: 'done', communes: plan.newCommunes, earlier: plan.earlier })
   }
 
   const busy = state.step === 'reading' || state.step === 'checking' || state.step === 'preview'
@@ -93,7 +92,8 @@ export function TimelineImport({ visits }: { visits: Visit[] }) {
       {state.step === 'error' && <p role="status">{state.message}</p>}
       {state.step === 'done' && (
         <p role="status">
-          Added {n(state.added, 'visit')}, including {n(state.communes, 'new commune')}.
+          Added {n(state.communes, 'new commune')}
+          {state.earlier > 0 && ` and an earlier first visit for ${n(state.earlier, 'commune')}`}.
         </p>
       )}
       {state.step === 'preview' && (
@@ -103,18 +103,19 @@ export function TimelineImport({ visits }: { visits: Visit[] }) {
             {state.plan.firstDate && state.plan.lastDate
               ? ` from ${formatDate(state.plan.firstDate)} to ${formatDate(state.plan.lastDate)}`
               : ''}
-            . {n(state.plan.visits.length, 'visit')} to add, covering {n(state.plan.newCommunes, 'commune')} you had not
-            recorded yet.
+            . {n(state.plan.newCommunes, 'new commune')} to add
+            {state.plan.earlier > 0 && `, and ${n(state.plan.earlier, 'commune')} you visited earlier than recorded`}. Only
+            the first visit to each commune is kept.
           </p>
           <ul className="muted">
             {state.plan.outside > 0 && <li>{n(state.plan.outside, 'stop')} outside mainland France, skipped</li>}
-            {state.plan.duplicates > 0 && <li>{n(state.plan.duplicates, 'stop')} already recorded, skipped</li>}
+            {state.plan.duplicates > 0 && <li>{n(state.plan.duplicates, 'stop')} in communes already counted, skipped</li>}
           </ul>
           <div className="actions start">
             <button onClick={() => setState({ step: 'idle' })}>Cancel</button>
             {state.plan.visits.length > 0 && (
               <button className="primary" onClick={() => save(state.plan)}>
-                Add {n(state.plan.visits.length, 'visit')}
+                Add {n(state.plan.visits.length, 'commune')}
               </button>
             )}
           </div>

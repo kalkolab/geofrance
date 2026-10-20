@@ -1,9 +1,10 @@
 // Merging visits between devices through one file in Google Drive.
 // Visits are only ever added or deleted, never edited, so a merge is: everything either side has,
-// minus everything either side deleted, with accidental duplicates (same visit imported on two
-// devices) collapsed to the one with the smallest uid so every device keeps the same copy.
+// minus everything either side deleted, keeping only the first visit to each commune (the same
+// one on every device); the others become deletions so they don't come back.
 
 import type { Tombstone, Visit } from '../db'
+import { firstVisits } from './firstVisit'
 
 export const SYNC_FORMAT = 'geofrance-sync'
 
@@ -17,8 +18,6 @@ export interface SyncFile {
   deleted: Tombstone[]
 }
 
-const contentKey = (v: SyncedVisit) => [v.commune, v.date ?? '', v.source, v.note ?? ''].join('|')
-
 export function mergeVisits(
   local: SyncedVisit[],
   localDeleted: Tombstone[],
@@ -31,14 +30,10 @@ export function mergeVisits(
   const byUid = new Map<string, SyncedVisit>()
   for (const v of [...(remote?.visits ?? []), ...local]) if (!deleted.has(v.uid) && !byUid.has(v.uid)) byUid.set(v.uid, v)
 
-  const byContent = new Map<string, SyncedVisit>()
-  for (const v of [...byUid.values()].sort((a, b) => (a.uid < b.uid ? -1 : 1))) {
-    const key = contentKey(v)
-    if (byContent.has(key)) deleted.set(v.uid, { uid: v.uid, deletedAt: now })
-    else byContent.set(key, v)
-  }
+  const { first, extra } = firstVisits([...byUid.values()])
+  for (const v of extra) deleted.set(v.uid, { uid: v.uid, deletedAt: now })
 
-  const visits = [...byContent.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || (a.uid < b.uid ? -1 : 1))
+  const visits = [...first.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || (a.uid < b.uid ? -1 : 1))
   return { visits, deleted: [...deleted.values()].sort((a, b) => (a.uid < b.uid ? -1 : 1)) }
 }
 

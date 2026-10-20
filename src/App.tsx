@@ -6,7 +6,7 @@ import { SettingsView } from './components/SettingsView'
 import { StatsView } from './components/StatsView'
 import { SyncButton } from './components/SyncButton'
 import { geocoder, loadRef } from './data'
-import { useVisits } from './db'
+import { keepFirstVisits, useVisits } from './db'
 import type { Location } from './lib/geocoder'
 import type { RefData } from './lib/ref'
 import { computeStats } from './lib/stats'
@@ -24,6 +24,7 @@ export function App() {
 
   useEffect(() => {
     loadRef().then(setGeo, (e: Error) => setError(e.message))
+    keepFirstVisits().catch(console.error)
   }, [])
 
   const visited = useMemo(() => new Set(visits?.map((v) => v.commune)), [visits])

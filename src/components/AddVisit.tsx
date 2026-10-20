@@ -16,13 +16,14 @@ export function AddVisit({ geo, initial, onDone }: Props) {
   const [date, setDate] = useState(today())
   const [dateUnknown, setDateUnknown] = useState(false)
   const [note, setNote] = useState('')
+  const [kept, setKept] = useState<string>()
   const results = useMemo(() => searchCommunes(geo, query), [geo, query])
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!commune) return
-    await addVisit(commune.code, dateUnknown ? null : date, note.trim())
-    onDone()
+    if (await addVisit(commune.code, dateUnknown ? null : date, note.trim())) onDone()
+    else setKept(`${commune.name} already has an earlier visit, which is kept. Only the first visit to each commune is stored.`)
   }
 
   return (
@@ -69,6 +70,7 @@ export function AddVisit({ geo, initial, onDone }: Props) {
         Date unknown
       </label>
       <input type="text" placeholder="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
+      {kept && <p role="status">{kept}</p>}
       <div className="actions">
         <button type="button" onClick={onDone}>
           Cancel

@@ -72,20 +72,24 @@ describe('timeline formats', () => {
 })
 
 describe('planVisits', () => {
-  it('keeps one visit per commune and day and skips what is known', () => {
+  it('keeps only the first visit per commune and skips what is known', () => {
     const stops = [
-      { lat: 0, lon: 0, date: '2024-05-01' },
-      { lat: 0, lon: 0, date: '2024-05-01' }, // same commune, same day
       { lat: 0, lon: 0, date: '2024-05-03' },
-      { lat: 0, lon: 0, date: '2024-04-20' },
+      { lat: 0, lon: 0, date: '2024-05-01' }, // earlier stop in the same commune
+      { lat: 0, lon: 0, date: '2024-05-01' },
+      { lat: 0, lon: 0, date: '2024-04-25' }, // after the stored first visit
+      { lat: 0, lon: 0, date: '2024-03-02' }, // earlier than the stored first visit
       { lat: 0, lon: 0, date: '2024-06-01' }, // outside France
     ]
-    const existing = [{ commune: '13055', date: '2024-04-20', source: 'manual' as const, createdAt: '' }]
-    const plan = planVisits(stops, ['75056', '75056', '75056', '13055', null], existing)
+    const existing = [
+      { commune: '13055', date: '2024-04-20', source: 'manual' as const, createdAt: '' },
+      { commune: '69123', date: '2024-04-20', source: 'manual' as const, createdAt: '' },
+    ]
+    const plan = planVisits(stops, ['75056', '75056', '75056', '13055', '69123', null], existing)
     expect(plan.visits).toEqual([
       { commune: '75056', date: '2024-05-01' },
-      { commune: '75056', date: '2024-05-03' },
+      { commune: '69123', date: '2024-03-02' },
     ])
-    expect(plan).toMatchObject({ newCommunes: 1, stops: 5, outside: 1, duplicates: 2, firstDate: '2024-05-01', lastDate: '2024-05-03' })
+    expect(plan).toMatchObject({ newCommunes: 1, earlier: 1, stops: 6, outside: 1, duplicates: 3, firstDate: '2024-03-02', lastDate: '2024-05-03' })
   })
 })
