@@ -83,6 +83,9 @@ nav button.active { background: var(--bg); font-weight: 600; }
 main { flex: 1; position: relative; overflow: auto; }
 .map-view { position: absolute; inset: 0; }
 .map { position: absolute; inset: 0; }
+.hover-label { position: absolute; transform: translate(12px, 12px); pointer-events: none; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.55rem; font-size: 0.85rem; line-height: 1.35; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); white-space: nowrap; z-index: 2; }
+.hover-label .muted { color: var(--muted); }
+.hover-label .tag { margin-left: 0.4rem; padding: 0 0.35rem; border-radius: 4px; background: var(--commune); color: #fff; font-size: 0.75rem; }
 .map-controls { position: absolute; top: 0.75rem; left: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .segmented { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .segmented button { border: none; border-radius: 0; }
