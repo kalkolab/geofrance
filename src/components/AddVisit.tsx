@@ -13,8 +13,7 @@ const today = () => new Date().toISOString().slice(0, 10)
 export function AddVisit({ geo, initial, onDone }: Props) {
   const [query, setQuery] = useState('')
   const [commune, setCommune] = useState<Commune | undefined>(initial)
-  const [date, setDate] = useState(today())
-  const [dateUnknown, setDateUnknown] = useState(false)
+  const [date, setDate] = useState('')
   const [note, setNote] = useState('')
   const [kept, setKept] = useState<string>()
   const results = useMemo(() => searchCommunes(geo, query), [geo, query])
@@ -22,7 +21,7 @@ export function AddVisit({ geo, initial, onDone }: Props) {
   async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!commune) return
-    if (await addVisit(commune.code, dateUnknown ? null : date, note.trim())) onDone()
+    if (await addVisit(commune.code, date || null, note.trim())) onDone()
     else setKept(`${commune.name} already has an earlier visit, which is kept. Only the first visit to each commune is stored.`)
   }
 
@@ -62,12 +61,13 @@ export function AddVisit({ geo, initial, onDone }: Props) {
         </>
       )}
       <label className="row">
-        <span>Date</span>
-        <input type="date" value={date} max={today()} disabled={dateUnknown} onChange={(e) => setDate(e.target.value)} />
-      </label>
-      <label className="check">
-        <input type="checkbox" checked={dateUnknown} onChange={(e) => setDateUnknown(e.target.checked)} />
-        Date unknown
+        <span>Date (optional)</span>
+        <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} />
+        {date && (
+          <button type="button" className="link" onClick={() => setDate('')}>
+            Clear
+          </button>
+        )}
       </label>
       <input type="text" placeholder="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
       {kept && <p role="status">{kept}</p>}
@@ -75,7 +75,7 @@ export function AddVisit({ geo, initial, onDone }: Props) {
         <button type="button" onClick={onDone}>
           Cancel
         </button>
-        <button type="submit" className="primary" disabled={!commune || (!dateUnknown && !date)}>
+        <button type="submit" className="primary" disabled={!commune}>
           Save visit
         </button>
       </div>
