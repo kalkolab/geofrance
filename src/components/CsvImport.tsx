@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { geocoder } from '../data'
-import { db } from '../db'
+import { saveVisits } from '../db'
 import { parseCsv, type CsvResult } from '../lib/csv'
 import { planImport, type ImportPlan } from '../lib/importPlan'
 import type { RefData } from '../lib/ref'
@@ -36,14 +36,12 @@ export function CsvImport({ geo, visited }: Props) {
   }
 
   async function save(plan: ImportPlan) {
-    const createdAt = new Date().toISOString()
-    await db.visits.bulkAdd(
+    await saveVisits(
       plan.communes.map(({ code, places }) => ({
         commune: code,
         date: null,
         source: 'csv' as const,
         note: places.filter((p) => p !== geo.commune.get(code)?.name).join(', ') || undefined,
-        createdAt,
       })),
     )
     setState({ step: 'done', added: plan.communes.length })

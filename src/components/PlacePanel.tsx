@@ -29,7 +29,7 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
   const commune = location.commune ? geo.commune.get(location.commune) : undefined
   const here = commune ? visits.filter((v) => v.commune === commune.code) : []
   const inDep = stats.communesByDepartement.get(dep.code) ?? 0
-  const dates = here.map((v) => v.date).filter(Boolean).sort() as string[]
+  const first = here[0]
 
   return (
     <div className="panel">
@@ -40,9 +40,7 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
       </p>
       {commune && (
         <p>
-          {here.length === 0
-            ? 'Not visited yet.'
-            : `Visited ${here.length === 1 ? 'once' : `${here.length} times`}${dates.length ? `, last on ${formatDate(dates.at(-1)!)}` : ''}.`}
+          {!first ? 'Not visited yet.' : first.date ? `First visited on ${formatDate(first.date)}.` : 'Visited, date unknown.'}
         </p>
       )}
       <p className="muted">
@@ -55,9 +53,9 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
             Remove
           </button>
         )}
-        {commune && (
+        {commune && !first && (
           <button className="primary" onClick={onAdd}>
-            {here.length ? 'Add another visit' : 'Mark as visited'}
+            Mark as visited
           </button>
         )}
       </div>
@@ -66,8 +64,7 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
 }
 
 function remove(name: string, visits: Visit[]) {
-  const what = visits.length === 1 ? `your visit to ${name}` : `all ${visits.length} visits to ${name}`
-  if (confirm(`Remove ${what}? If you sync with Google Drive, it is removed on your other devices too.`)) deleteVisits(visits)
+  if (confirm(`Remove your visit to ${name}? If you sync with Google Drive, it is removed on your other devices too.`)) deleteVisits(visits)
 }
 
 export const formatDate = (iso: string) =>

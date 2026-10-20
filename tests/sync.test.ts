@@ -38,12 +38,13 @@ describe('mergeVisits', () => {
     expect(uids(desktop)).toEqual(['x1'])
   })
 
-  it('keeps separate visits to the same commune on different days', () => {
-    const r = mergeVisits([visit('a', '75056', '2024-01-01'), visit('b', '75056', '2024-01-02')], [], null)
-    expect(uids(r)).toEqual(['a', 'b'])
-  })
-
   it('gives the same signature regardless of order', () => {
     expect(signature([{ uid: 'b' }, { uid: 'a' }], [{ uid: 'z' }])).toBe(signature([{ uid: 'a' }, { uid: 'b' }], [{ uid: 'z' }]))
+  })
+
+  it('keeps only the first visit to each commune, the same one on both devices', () => {
+    const r = mergeVisits([visit('a', '75056', '2024-05-01'), visit('b', '75056')], [], file([visit('c', '75056', '2023-01-10')]), 'now')
+    expect(uids(r)).toEqual(['c'])
+    expect(r.deleted.map((t) => t.uid)).toEqual(['a', 'b'])
   })
 })
