@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { deleteVisits, exportVisits, importVisits, type Visit } from '../db'
+import { LANGUAGES, getLang, setLang, useT, type Lang } from '../i18n'
 import type { RefData } from '../lib/ref'
 import { CsvImport } from './CsvImport'
 import { AccountSection } from './SyncButton'
@@ -14,6 +15,7 @@ interface Props {
 export function SettingsView({ geo, visited, visits }: Props) {
   const visitCount = visits.length
   const [message, setMessage] = useState('')
+  const t = useT()
 
   async function download() {
     const url = URL.createObjectURL(await exportVisits())
@@ -28,36 +30,43 @@ export function SettingsView({ geo, visited, visits }: Props) {
     if (!file) return
     try {
       const added = await importVisits(await file.text())
-      setMessage(`Imported ${added} visit${added === 1 ? '' : 's'}.`)
+      setMessage(t('imported', { count: added }))
     } catch (e) {
       setMessage((e as Error).message)
     }
   }
 
   async function deleteAll() {
-    if (confirm(`Delete all ${visitCount} visits? If you sync with Google Drive, they are removed on your other devices too.`)) {
+    if (confirm(t('confirmDeleteAll', { count: visitCount }))) {
       await deleteVisits(visits)
-      setMessage('All visits deleted.')
+      setMessage(t('allDeleted'))
     }
   }
 
   return (
     <div className="page">
+      <section>
+        <h2>{t('language')}</h2>
+        <div className="languages" role="group" aria-label={t('language')}>
+          {LANGUAGES.map((l) => (
+            <button key={l.code} lang={l.code} className={getLang() === l.code ? 'active' : ''} onClick={() => setLang(l.code as Lang)}>
+              {l.name}
+            </button>
+          ))}
+        </div>
+      </section>
       <AccountSection />
       <section>
-        <h2>Your data</h2>
-        <p className="muted">
-          Your {visitCount} visits are stored in this browser, and in your Google Drive if you sign in. Export them to
-          keep a copy of your own.
-        </p>
+        <h2>{t('yourData')}</h2>
+        <p className="muted">{t('yourDataHelp', { count: visitCount })}</p>
         <div className="actions start">
-          <button onClick={download}>Export visits</button>
+          <button onClick={download}>{t('exportVisits')}</button>
           <label className="button">
-            Import visits
+            {t('importVisits')}
             <input type="file" accept="application/json,.json" hidden onChange={(e) => restore(e.target.files?.[0])} />
           </label>
           <button className="danger" onClick={deleteAll} disabled={!visitCount}>
-            Delete all
+            {t('deleteAll')}
           </button>
         </div>
         {message && <p role="status">{message}</p>}
@@ -65,15 +74,12 @@ export function SettingsView({ geo, visited, visits }: Props) {
       <TimelineImport visits={visits} />
       <CsvImport geo={geo} visited={visited} />
       <section>
-        <h2>Coming next</h2>
-        <p className="muted">Google Photos import.</p>
+        <h2>{t('comingNext')}</h2>
+        <p className="muted">{t('comingNextBody')}</p>
       </section>
       <section>
-        <h2>About</h2>
-        <p className="muted">
-          Mainland France including Corsica: 13 regions, 96 departments and about 34,750 communes. Codes and names from
-          INSEE (COG), boundaries from IGN ADMIN EXPRESS via france-geojson, under the Licence Ouverte.
-        </p>
+        <h2>{t('about')}</h2>
+        <p className="muted">{t('aboutBody')}</p>
       </section>
     </div>
   )

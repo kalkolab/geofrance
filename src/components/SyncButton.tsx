@@ -1,66 +1,66 @@
+import { formatTime, rich, useT, type MessageKey } from '../i18n'
 import { sync, useSync } from '../sync'
 
-const LABEL = {
-  'needs-tap': 'Sync',
-  syncing: 'Syncing…',
-  synced: 'Synced',
-  error: 'Sync failed',
-} as const
+const LABEL: Record<'needs-tap' | 'syncing' | 'synced' | 'error', MessageKey> = {
+  'needs-tap': 'syncButton',
+  syncing: 'syncing',
+  synced: 'synced',
+  error: 'syncFailed',
+}
 
 // In the header once you have signed in: one tap after opening the app brings in your other devices' visits.
 export function SyncButton() {
   const state = useSync()
+  const t = useT()
   if (state.status === 'unconfigured' || state.status === 'signed-out') return null
   return (
     <button
       className={`sync ${state.status}`}
       onClick={sync.syncNow}
       disabled={state.status === 'syncing'}
-      title={state.error ?? (state.email ? `Google Drive: ${state.email}` : undefined)}
+      title={state.error ?? (state.email ? t('driveAccount', { email: state.email }) : undefined)}
     >
-      {LABEL[state.status]}
+      {t(LABEL[state.status])}
     </button>
   )
 }
 
 export function AccountSection() {
   const state = useSync()
+  const t = useT()
   return (
     <section>
-      <h2>Google account</h2>
+      <h2>{t('googleAccount')}</h2>
       {state.status === 'unconfigured' ? (
-        <p className="muted">Google sign-in is not set up for this copy of the app.</p>
+        <p className="muted">{t('signInNotConfigured')}</p>
       ) : state.status === 'signed-out' ? (
         <>
-          <p className="muted">
-            Sign in to keep your visits in your own Google Drive and see the same data on your phone and computer. The
-            app can only see its own file there, not the rest of your Drive.
-          </p>
+          <p className="muted">{t('signInHelp')}</p>
           <div className="actions start">
             <button className="primary" onClick={sync.syncNow}>
-              Sign in with Google
+              {t('signIn')}
             </button>
           </div>
         </>
       ) : (
         <>
           <p>
-            Signed in as <strong>{state.email}</strong>.{' '}
+            {rich(t('signedInAs', { email: state.email ?? '' }))}{' '}
             <span className="muted">
               {state.status === 'syncing'
-                ? 'Syncing…'
+                ? t('syncing')
                 : state.status === 'needs-tap'
-                  ? 'Tap Sync to bring in changes from your other devices.'
+                  ? t('tapSync')
                   : state.lastSync
-                    ? `Last synced at ${new Date(state.lastSync).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}.`
+                    ? t('lastSynced', { time: formatTime(state.lastSync) })
                     : ''}
             </span>
           </p>
           <div className="actions start">
             <button onClick={sync.syncNow} disabled={state.status === 'syncing'}>
-              Sync now
+              {t('syncNow')}
             </button>
-            <button onClick={sync.signOut}>Sign out</button>
+            <button onClick={sync.signOut}>{t('signOut')}</button>
           </div>
         </>
       )}

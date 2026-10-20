@@ -1,4 +1,5 @@
 import { deleteVisits, type Visit } from '../db'
+import { formatDate, t as translate, useT } from '../i18n'
 import type { Location } from '../lib/geocoder'
 import type { RefData } from '../lib/ref'
 import type { Stats } from '../lib/stats'
@@ -14,12 +15,13 @@ interface Props {
 
 // Shown after tapping the map: what is there and whether you have been.
 export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Props) {
+  const t = useT()
   if (!location) {
     return (
       <div className="panel">
-        <p>This point is outside mainland France.</p>
+        <p>{t('outsideFrance')}</p>
         <div className="actions">
-          <button onClick={onClose}>Close</button>
+          <button onClick={onClose}>{t('close')}</button>
         </div>
       </div>
     )
@@ -35,27 +37,27 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
     <div className="panel">
       <h2>{commune?.name ?? dep.name}</h2>
       <p className="muted">
-        {commune ? `${dep.name} (${dep.code}) · ` : `Department ${dep.code} · `}
+        {commune ? `${dep.name} (${dep.code}) · ` : `${t('departementCode', { code: dep.code })} · `}
         {region.name}
       </p>
       {commune && (
         <p>
-          {!first ? 'Not visited yet.' : first.date ? `First visited on ${formatDate(first.date)}.` : 'Visited, date unknown.'}
+          {!first ? t('notVisited') : first.date ? t('firstVisitedOn', { date: formatDate(first.date) }) : t('visitedNoDate')}
         </p>
       )}
       <p className="muted">
-        {inDep} of {geo.communes.filter((c) => c.departement === dep.code).length} communes visited in {dep.name}.
+        {t('communesInDep', { visited: inDep, count: geo.communes.filter((c) => c.departement === dep.code).length, dep: dep.name })}
       </p>
       <div className="actions">
-        <button onClick={onClose}>Close</button>
+        <button onClick={onClose}>{t('close')}</button>
         {commune && here.length > 0 && (
           <button className="danger" onClick={() => remove(commune.name, here)}>
-            Remove
+            {t('remove')}
           </button>
         )}
         {commune && !first && (
           <button className="primary" onClick={onAdd}>
-            Mark as visited
+            {t('markVisited')}
           </button>
         )}
       </div>
@@ -64,8 +66,5 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
 }
 
 function remove(name: string, visits: Visit[]) {
-  if (confirm(`Remove your visit to ${name}? If you sync with Google Drive, it is removed on your other devices too.`)) deleteVisits(visits)
+  if (confirm(translate('confirmRemove', { name }))) deleteVisits(visits)
 }
-
-export const formatDate = (iso: string) =>
-  new Date(iso + 'T12:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })

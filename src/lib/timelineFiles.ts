@@ -1,5 +1,6 @@
 import { strFromU8, unzip } from 'fflate'
 import { parseTimeline, type Stop, type TimelineFormat } from './timeline'
+import { t } from '../i18n'
 
 export interface TimelineFiles {
   stops: Stop[]
@@ -35,10 +36,10 @@ export async function readTimelineFiles(files: File[]): Promise<TimelineFiles> {
       try {
         add(await file.text(), true)
       } catch (e) {
-        throw new Error(`${file.name}: ${e instanceof SyntaxError ? 'not a JSON file' : (e as Error).message}`)
+        throw new Error(e instanceof SyntaxError ? t('errNotJson', { file: file.name }) : `${file.name}: ${(e as Error).message}`)
       }
     }
   }
-  if (!result.files) throw new Error('No Google Maps Timeline data found in the selected files')
+  if (!result.files) throw new Error(t('errNoTimeline'))
   return result
 }

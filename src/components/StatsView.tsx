@@ -3,7 +3,7 @@ import { deleteVisits, type Visit } from '../db'
 import type { RefData } from '../lib/ref'
 import type { Progress, Stats } from '../lib/stats'
 import { placeLabel } from './AddVisit'
-import { formatDate } from './PlacePanel'
+import { formatDate, formatNumber as fmt, useT, type MessageKey } from '../i18n'
 
 interface Props {
   geo: RefData
@@ -12,7 +12,6 @@ interface Props {
 }
 
 const pct = (p: Progress) => (p.total ? (100 * p.visited) / p.total : 0)
-const fmt = (n: number) => n.toLocaleString('fr-FR')
 
 function Headline({ label, progress }: { label: string; progress: Progress }) {
   return (
@@ -27,10 +26,16 @@ function Headline({ label, progress }: { label: string; progress: Progress }) {
   )
 }
 
-const SOURCE_LABEL = { manual: 'Manual', csv: 'CSV import', timeline: 'Timeline', photo: 'Photo' }
+const SOURCE_LABEL: Record<Visit['source'], MessageKey> = {
+  manual: 'sourceManual',
+  csv: 'sourceCsv',
+  timeline: 'sourceTimeline',
+  photo: 'sourcePhoto',
+}
 
 export function StatsView({ geo, stats, visits }: Props) {
   const [showAll, setShowAll] = useState(false)
+  const t = useT()
   const sorted = [...visits].sort(
     (a, b) => (b.date ?? '').localeCompare(a.date ?? '') || b.createdAt.localeCompare(a.createdAt),
   )
@@ -39,22 +44,22 @@ export function StatsView({ geo, stats, visits }: Props) {
   return (
     <div className="page">
       <section className="headlines">
-        <Headline label="Communes" progress={stats.communes} />
-        <Headline label="Departments" progress={stats.departements} />
-        <Headline label="Regions" progress={stats.regions} />
+        <Headline label={t('communes')} progress={stats.communes} />
+        <Headline label={t('departements')} progress={stats.departements} />
+        <Headline label={t('regions')} progress={stats.regions} />
       </section>
 
       <section>
-        <h2>By region</h2>
-        <p className="muted">Share of each region's departments you have visited.</p>
+        <h2>{t('byRegion')}</h2>
+        <p className="muted">{t('byRegionHelp')}</p>
         <ul className="bars">
           {stats.byRegion.map((r) => (
             <li key={r.code}>
               <div className="bar-label">
                 <span>{r.name}</span>
                 <span className="muted">
-                  {r.departements.visited}/{r.departements.total} departments · {fmt(r.communes.visited)}{' '}
-                  {r.communes.visited === 1 ? 'commune' : 'communes'}
+                  {t('regionDeps', { visited: r.departements.visited, total: r.departements.total })} ·{' '}
+                  {t('communesCount', { count: r.communes.visited })}
                 </span>
               </div>
               <div className="bar">
@@ -66,9 +71,9 @@ export function StatsView({ geo, stats, visits }: Props) {
       </section>
 
       <section>
-        <h2>Your visits</h2>
+        <h2>{t('yourVisits')}</h2>
         {sorted.length === 0 ? (
-          <p className="muted">No visits yet. Tap the map or use "Add a visit" to record one.</p>
+          <p className="muted">{t('noVisits')}</p>
         ) : (
           <ul className="visits">
             {shown.map((v) => {
@@ -78,12 +83,12 @@ export function StatsView({ geo, stats, visits }: Props) {
                   <div>
                     <strong>{c?.name ?? v.commune}</strong> <span className="muted">{c && placeLabel(geo, c)}</span>
                     <div className="muted">
-                      {v.date ? formatDate(v.date) : 'Date unknown'} · {SOURCE_LABEL[v.source]}
+                      {v.date ? formatDate(v.date) : t('dateUnknown')} · {t(SOURCE_LABEL[v.source])}
                       {v.note ? ` · ${v.note}` : ''}
                     </div>
                   </div>
-                  <button className="link" onClick={() => deleteVisits([v])} aria-label={`Delete visit to ${c?.name}`}>
-                    Delete
+                  <button className="link" onClick={() => deleteVisits([v])} aria-label={t('deleteVisitTo', { name: c?.name ?? v.commune })}>
+                    {t('delete')}
                   </button>
                 </li>
               )
@@ -92,7 +97,7 @@ export function StatsView({ geo, stats, visits }: Props) {
         )}
         {sorted.length > shown.length && (
           <button className="link" onClick={() => setShowAll(true)}>
-            Show all {sorted.length} visits
+            {t('showAll', { count: sorted.length })}
           </button>
         )}
       </section>

@@ -2,6 +2,7 @@
 // The app only asks for drive.appdata: a hidden folder for this app, which cannot see your other files.
 
 import type { SyncFile } from './lib/sync'
+import { t } from './i18n'
 
 export const CLIENT_ID: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID || undefined
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata openid email'
@@ -50,7 +51,7 @@ export function loadGoogle(): Promise<void> {
     script.onload = () => resolve()
     script.onerror = () => {
       gis = undefined
-      reject(new Error('Could not load Google sign-in. Check your connection.'))
+      reject(new Error(t('errGoogleLoad')))
     }
     document.head.appendChild(script)
   })
@@ -60,8 +61,8 @@ export function loadGoogle(): Promise<void> {
 // Call from a click handler. Without a prompt, Google only asks again when it needs to.
 export function requestToken(loginHint?: string): Promise<Token> {
   const oauth2 = window.google?.accounts.oauth2
-  if (!CLIENT_ID) return Promise.reject(new Error('Google sign-in is not configured for this site'))
-  if (!oauth2) return Promise.reject(new Error('Google sign-in is still loading, try again in a moment'))
+  if (!CLIENT_ID) return Promise.reject(new Error(t('errGoogleNotConfigured')))
+  if (!oauth2) return Promise.reject(new Error(t('errGoogleLoading')))
   return new Promise((resolve, reject) => {
     oauth2
       .initTokenClient({
@@ -72,7 +73,7 @@ export function requestToken(loginHint?: string): Promise<Token> {
           r.error
             ? reject(new Error(r.error_description || r.error))
             : resolve({ value: r.access_token, expiresAt: Date.now() + (Number(r.expires_in) - 60) * 1000 }),
-        error_callback: (e) => reject(new Error(e.type === 'popup_closed' ? 'Sign-in was cancelled' : e.message || e.type)),
+        error_callback: (e) => reject(new Error(e.type === 'popup_closed' ? t('errSignInCancelled') : e.message || e.type)),
       })
       .requestAccessToken({ prompt: loginHint ? '' : 'select_account' })
   })
@@ -84,8 +85,8 @@ export function revokeToken(token: Token) {
 
 async function call(token: Token, url: string, init: RequestInit = {}): Promise<Response> {
   const res = await fetch(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${token.value}` } })
-  if (res.status === 401 || res.status === 403) throw new AuthError('Google sign-in expired')
-  if (!res.ok) throw new Error(`Google Drive error ${res.status}`)
+  if (res.status === 401 || res.status === 403) throw new AuthError(t('errSignInExpired'))
+  if (!res.ok) throw new Error(t('errDrive', { status: String(res.status) }))
   return res
 }
 

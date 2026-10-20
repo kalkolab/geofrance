@@ -1,6 +1,7 @@
 import Dexie, { liveQuery, type Table } from 'dexie'
 import { useEffect, useState } from 'react'
 import { firstVisits, isEarlier } from './lib/firstVisit'
+import { t } from './i18n'
 
 export type VisitSource = 'manual' | 'csv' | 'timeline' | 'photo'
 
@@ -105,10 +106,10 @@ export async function exportVisits(): Promise<Blob> {
 // Restores an export, keeping only the first visit to each commune.
 export async function importVisits(text: string): Promise<number> {
   if (!text.trimStart().startsWith('{')) {
-    throw new Error('This is not a GeoFrance export file. For a CSV of places, use "Import places from a CSV file" below.')
+    throw new Error(t('errNotExportCsv', { csv: t('csvTitle') }))
   }
   const body = JSON.parse(text)
-  if (body?.format !== EXPORT_FORMAT || !Array.isArray(body.visits)) throw new Error('Not a GeoFrance export file')
+  if (body?.format !== EXPORT_FORMAT || !Array.isArray(body.visits)) throw new Error(t('errNotExport'))
   return saveVisits(
     body.visits
       .filter((v: Visit) => typeof v.commune === 'string')

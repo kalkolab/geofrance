@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { geocoder } from '../data'
 import { saveVisits } from '../db'
+import { rich, useT } from '../i18n'
 import { parseCsv, type CsvResult } from '../lib/csv'
 import { planImport, type ImportPlan } from '../lib/importPlan'
 import type { RefData } from '../lib/ref'
@@ -18,10 +19,12 @@ type State =
   | { step: 'done'; added: number }
   | { step: 'error'; message: string }
 
-const plural = (n: number, word: string) => `${n.toLocaleString('fr-FR')} ${word}${n === 1 ? '' : 's'}`
-
 export function CsvImport({ geo, visited }: Props) {
   const [state, setState] = useState<State>({ step: 'idle' })
+  const t = useT()
+  const places = (count: number) => t('placesCount', { count })
+  const communes = (count: number) => t('communesCount', { count })
+  const rows = (count: number) => t('rowsCount', { count })
 
   async function read(file: File | undefined) {
     if (!file) return
@@ -49,15 +52,11 @@ export function CsvImport({ geo, visited }: Props) {
 
   return (
     <section>
-      <h2>Import places from a CSV file</h2>
-      <p className="muted">
-        A file with a header row and <code>lat</code> and <code>lon</code> columns, separated by semicolons or commas.
-        Each point in mainland France marks its commune as visited (date unknown). If there is a <code>been</code>{' '}
-        column, only rows marked "been" are used.
-      </p>
+      <h2>{t('csvTitle')}</h2>
+      <p className="muted">{rich(t('csvHelp'))}</p>
       {state.step !== 'preview' && state.step !== 'checking' && (
         <label className="button">
-          Choose CSV file
+          {t('csvChoose')}
           <input
             type="file"
             accept=".csv,text/csv,text/plain"
@@ -69,26 +68,32 @@ export function CsvImport({ geo, visited }: Props) {
           />
         </label>
       )}
-      {state.step === 'checking' && <p role="status">Checking {plural(state.count, 'place')}…</p>}
+      {state.step === 'checking' && <p role="status">{t('csvChecking', { places: places(state.count) })}</p>}
       {state.step === 'error' && <p role="status">{state.message}</p>}
-      {state.step === 'done' && <p role="status">Added {plural(state.added, 'commune')} to your visits.</p>}
+      {state.step === 'done' && <p role="status">{t('csvAdded', { communes: t('newCommunesCount', { count: state.added }) })}</p>}
       {state.step === 'preview' && (
         <div className="import-preview">
           <p>
-            <strong>{state.file}</strong>: {plural(state.csv.points.length, 'place')} read,{' '}
-            {plural(state.plan.communes.length, 'new commune')} to add.
+            {rich(
+              t('csvRead', {
+                file: state.file,
+                places: places(state.csv.points.length),
+                communes: t('newCommunesCount', { count: state.plan.communes.length }),
+              }),
+            )}
           </p>
           <ul className="muted">
-            {state.plan.outside > 0 && <li>{plural(state.plan.outside, 'place')} outside mainland France, skipped</li>}
+            {state.plan.outside > 0 && <li>{t('csvOutside', { places: places(state.plan.outside) })}</li>}
             {state.plan.alreadyVisited > 0 && (
-              <li>{plural(state.plan.alreadyVisited, 'commune')} already in your visits, skipped</li>
+              <li>{t('csvAlready', { communes: communes(state.plan.alreadyVisited) })}</li>
             )}
-            {state.csv.notBeen > 0 && <li>{plural(state.csv.notBeen, 'row')} not marked "been", skipped</li>}
+            {state.csv.notBeen > 0 && <li>{t('csvNotBeen', { rows: rows(state.csv.notBeen) })}</li>}
             {state.csv.invalid.length > 0 && (
               <li>
-                {plural(state.csv.invalid.length, 'row')} without valid coordinates (line{' '}
-                {state.csv.invalid.slice(0, 5).join(', ')}
-                {state.csv.invalid.length > 5 ? '…' : ''})
+                {t('csvInvalid', {
+                  rows: rows(state.csv.invalid.length),
+                  lines: state.csv.invalid.slice(0, 5).join(', ') + (state.csv.invalid.length > 5 ? '…' : ''),
+                })}
               </li>
             )}
           </ul>
@@ -105,10 +110,10 @@ export function CsvImport({ geo, visited }: Props) {
             </ul>
           )}
           <div className="actions start">
-            <button onClick={() => setState({ step: 'idle' })}>Cancel</button>
+            <button onClick={() => setState({ step: 'idle' })}>{t('cancel')}</button>
             {state.plan.communes.length > 0 && (
               <button className="primary" onClick={() => save(state.plan)}>
-                Add {plural(state.plan.communes.length, 'commune')}
+                {t('addCommunes', { count: state.plan.communes.length })}
               </button>
             )}
           </div>
