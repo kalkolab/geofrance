@@ -1,4 +1,4 @@
-import type { Visit } from '../db'
+import { deleteVisits, type Visit } from '../db'
 import type { Location } from '../lib/geocoder'
 import type { RefData } from '../lib/ref'
 import type { Stats } from '../lib/stats'
@@ -50,6 +50,11 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
       </p>
       <div className="actions">
         <button onClick={onClose}>Close</button>
+        {commune && here.length > 0 && (
+          <button className="danger" onClick={() => remove(commune.name, here)}>
+            Remove
+          </button>
+        )}
         {commune && (
           <button className="primary" onClick={onAdd}>
             {here.length ? 'Add another visit' : 'Mark as visited'}
@@ -58,6 +63,11 @@ export function PlacePanel({ geo, stats, location, visits, onAdd, onClose }: Pro
       </div>
     </div>
   )
+}
+
+function remove(name: string, visits: Visit[]) {
+  const what = visits.length === 1 ? `your visit to ${name}` : `all ${visits.length} visits to ${name}`
+  if (confirm(`Remove ${what}? If you sync with Google Drive, it is removed on your other devices too.`)) deleteVisits(visits)
 }
 
 export const formatDate = (iso: string) =>
