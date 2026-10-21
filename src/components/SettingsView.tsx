@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { deleteVisits, exportVisits, importVisits, type Visit } from '../db'
-import { LANGUAGES, getLang, setLang, useT, type Lang } from '../i18n'
+import { LANGUAGES, browserLang, getLang, isAutoLang, setLang, useT, type Lang } from '../i18n'
 import type { RefData } from '../lib/ref'
 import { CsvImport } from './CsvImport'
 import { AccountSection } from './SyncButton'
@@ -48,8 +48,16 @@ export function SettingsView({ geo, visited, visits }: Props) {
       <section>
         <h2>{t('language')}</h2>
         <div className="languages" role="group" aria-label={t('language')}>
+          <button className={isAutoLang() ? 'active' : ''} onClick={() => setLang(null)}>
+            {t('languageAuto', { name: LANGUAGES.find((l) => l.code === browserLang())!.name })}
+          </button>
           {LANGUAGES.map((l) => (
-            <button key={l.code} lang={l.code} className={getLang() === l.code ? 'active' : ''} onClick={() => setLang(l.code as Lang)}>
+            <button
+              key={l.code}
+              lang={l.code}
+              className={!isAutoLang() && getLang() === l.code ? 'active' : ''}
+              onClick={() => setLang(l.code as Lang)}
+            >
               {l.name}
             </button>
           ))}

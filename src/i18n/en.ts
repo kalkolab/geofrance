@@ -71,6 +71,7 @@ export const en = {
   deleteVisitTo: 'Delete visit to {name}',
   showAll: { one: 'Show all {count} visit', other: 'Show all {count} visits' },
 
+  languageAuto: 'Automatic ({name})', // follows the browser's settings
   language: 'Language',
   yourData: 'Your data',
   yourDataHelp: {

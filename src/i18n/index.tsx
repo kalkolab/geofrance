@@ -21,13 +21,17 @@ const MESSAGES: Record<Lang, Messages> = { en, fr, uk, ru }
 const STORAGE_KEY = 'geofrance.language'
 const isLang = (code: unknown): code is Lang => LANGUAGES.some((l) => l.code === code)
 
-function initialLang(): Lang {
+function savedLang(): Lang | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
-    if (isLang(saved)) return saved
+    return isLang(saved) ? saved : null
   } catch {
-    // private browsing: fall back to the browser's languages
+    return null // private browsing: nothing remembered
   }
+}
+
+// The first of the browser's preferred languages that the app has, else English.
+export function browserLang(): Lang {
   for (const tag of typeof navigator === 'undefined' ? [] : navigator.languages ?? [navigator.language]) {
     const code = tag.slice(0, 2).toLowerCase()
     if (isLang(code)) return code
@@ -35,22 +39,30 @@ function initialLang(): Lang {
   return 'en'
 }
 
-let lang: Lang = initialLang()
+let auto = savedLang() === null
+let lang: Lang = savedLang() ?? browserLang()
 const listeners = new Set<() => void>()
 if (typeof document !== 'undefined') document.documentElement.lang = lang
 
 export const getLang = () => lang
+export const isAutoLang = () => auto
 
-export function setLang(next: Lang) {
-  lang = next
+// A language, or null to follow the browser's settings again.
+export function setLang(next: Lang | null) {
+  auto = next === null
+  lang = next ?? browserLang()
   try {
-    localStorage.setItem(STORAGE_KEY, next)
+    if (next) localStorage.setItem(STORAGE_KEY, next)
+    else localStorage.removeItem(STORAGE_KEY)
   } catch {
     // not remembered, but still applied
   }
-  if (typeof document !== 'undefined') document.documentElement.lang = next
+  if (typeof document !== 'undefined') document.documentElement.lang = lang
   listeners.forEach((l) => l())
 }
+
+// Following the browser: pick up a change made in its settings while the app is open.
+if (typeof window !== 'undefined') window.addEventListener('languagechange', () => auto && setLang(null))
 
 export const formatNumber = (n: number) => n.toLocaleString(lang)
 
@@ -83,7 +95,7 @@ export function useT() {
       listeners.add(l)
       return () => listeners.delete(l)
     },
-    getLang,
+    () => (auto ? `auto:${lang}` : lang),
   )
   return t
 }

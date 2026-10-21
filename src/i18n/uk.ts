@@ -74,6 +74,7 @@ export const uk: Messages = {
   deleteVisitTo: 'Видалити візит до {name}',
   showAll: { one: 'Показати всі візити ({count})', other: 'Показати всі візити ({count})' },
 
+  languageAuto: 'Автоматично ({name})',
   language: 'Мова',
   yourData: 'Ваші дані',
   yourDataHelp: {

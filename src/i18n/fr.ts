@@ -66,6 +66,7 @@ export const fr: Messages = {
   deleteVisitTo: 'Supprimer la visite à {name}',
   showAll: { one: 'Afficher {count} visite', other: 'Afficher les {count} visites' },
 
+  languageAuto: 'Automatique ({name})',
   language: 'Langue',
   yourData: 'Vos données',
   yourDataHelp: {
