@@ -6,6 +6,7 @@ import { geocoder, loadCommunes, loadDepartements, loadRegions } from '../data'
 import { useT } from '../i18n'
 import type { Location } from '../lib/geocoder'
 import type { GoalItem } from '../lib/goals'
+import { DISPLAY_BOUNDS, displayCollection, fromDisplay, insetFrames, toDisplay } from '../lib/overseas'
 import type { RefData } from '../lib/ref'
 import type { Stats } from '../lib/stats'
 
@@ -25,7 +26,6 @@ export const COLORS = {
   hover: '#1d232a',
 }
 
-const FRANCE: [number, number, number, number] = [-5.3, 41.3, 9.6, 51.15]
 const EMPTY: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
 
 const STYLE: StyleSpecification = {
@@ -34,7 +34,8 @@ const STYLE: StyleSpecification = {
   layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#f4f1ea' } }],
 }
 
-const asGeoJSON = (fc: unknown) => fc as GeoJSON.FeatureCollection
+// Overseas departments are moved into their boxes under the mainland before they are drawn.
+const asGeoJSON = (fc: unknown) => displayCollection(fc as GeoJSON.FeatureCollection)
 
 // Only devices with a real pointer get the hover label; on a phone a tap opens the place panel instead.
 const canHover = typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches
@@ -66,21 +67,25 @@ export function FranceMap({ geo, stats, visited, level, selected, highlight, onP
     const map = new MapLibre({
       container: container.current!,
       style: STYLE,
-      bounds: FRANCE,
-      fitBoundsOptions: { padding: 12 },
+      bounds: DISPLAY_BOUNDS,
+      fitBoundsOptions: { padding: { top: 56, bottom: 48, left: 12, right: 12 } }, // clear of the buttons and the legend
       dragRotate: false,
       pitchWithRotate: false,
       attributionControl: { compact: true, customAttribution: 'Boundaries: IGN ADMIN EXPRESS, INSEE COG' },
     })
     map.touchZoomRotate.disableRotation()
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
-    map.on('click', (e) => onPickRef.current(e.lngLat.lng, e.lngLat.lat))
+    map.on('click', (e) => {
+      const [lon, lat] = fromDisplay([e.lngLat.lng, e.lngLat.lat])
+      onPickRef.current(lon, lat)
+    })
     if (canHover) {
       let latest = 0
       map.on('mousemove', (e) => {
         const call = ++latest
         const { x, y } = e.point
-        geocoder.locate(e.lngLat.lng, e.lngLat.lat).then(
+        const [lon, lat] = fromDisplay([e.lngLat.lng, e.lngLat.lat])
+        geocoder.locate(lon, lat).then(
           (place) => call === latest && setHover(place && { ...place, x, y }),
           () => {},
         )
@@ -98,8 +103,15 @@ export function FranceMap({ geo, stats, visited, level, selected, highlight, onP
       map.addSource('selection', { type: 'geojson', data: EMPTY })
       map.addSource('hover', { type: 'geojson', data: EMPTY })
       map.addSource('goal-places', { type: 'geojson', data: EMPTY })
+      map.addSource('inset-frames', { type: 'geojson', data: insetFrames })
       const share = ['coalesce', ['feature-state', 'share'], 0]
       const [s1, s2, s3, s4, s5] = COLORS.regionSteps
+      map.addLayer({
+        id: 'inset-frames',
+        type: 'line',
+        source: 'inset-frames',
+        paint: { 'line-color': COLORS.regionBorder, 'line-width': 1, 'line-opacity': 0.35, 'line-dasharray': [3, 2] },
+      })
       map.addLayer({
         id: 'regions-fill',
         type: 'fill',
@@ -247,7 +259,7 @@ export function FranceMap({ geo, stats, visited, level, selected, highlight, onP
     for (const r of geo.regions) map.setFeatureState({ source: 'regions', id: r.code }, { missing: regions.has(r.code) })
     const features = [...codes('commune')].flatMap((code) => {
       const point = geo.point.get(code)
-      return point ? [{ type: 'Feature' as const, properties: { code }, geometry: { type: 'Point' as const, coordinates: point } }] : []
+      return point ? [{ type: 'Feature' as const, properties: { code }, geometry: { type: 'Point' as const, coordinates: toDisplay(point) } }] : []
     })
     ;(map.getSource('goal-places') as GeoJSONSource).setData({ type: 'FeatureCollection', features })
   }, [ready, geo, highlight])

@@ -3,6 +3,7 @@
 // whatever the map is zoomed to, and in light colours whatever the device theme.
 
 import { polygonsOf, type FeatureCollection, type Polygon } from './geo'
+import { DISPLAY_BOUNDS, displayCollection, INSETS } from './overseas'
 
 export const IMAGE_WIDTH = 1080
 export const IMAGE_HEIGHT = 1350
@@ -36,8 +37,9 @@ const TEXT = '#1d232a'
 const MUTED = '#5d6874'
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
 
-// Same bounds and Web Mercator projection as the map on screen.
-const FRANCE = { west: -5.3, south: 41.3, east: 9.6, north: 51.15 }
+// Same bounds, overseas boxes and Web Mercator projection as the map on screen.
+const [west, south, east, north] = DISPLAY_BOUNDS
+const FRANCE = { west, south, east, north }
 const mercY = (lat: number) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
 
 function projector(box: { x: number; y: number; w: number; h: number }) {
@@ -89,7 +91,7 @@ export function drawShareImage(ctx: CanvasRenderingContext2D, input: ShareImageI
   ctx.fillText(input.subtitle, 64, 160, W - 128)
 
   const project = projector({ x: 40, y: 190, w: W - 80, h: 820 })
-  const shape = (fc: FeatureCollection) => fc.features.map((f) => ({ code: f.properties.code, path: pathOf(polygonsOf(f.geometry), project) }))
+  const shape = (fc: FeatureCollection) => displayCollection(fc).features.map((f) => ({ code: f.properties.code, path: pathOf(polygonsOf(f.geometry), project) }))
   const regions = shape(input.regions)
   const departements = shape(input.departements)
 
@@ -115,6 +117,14 @@ export function drawShareImage(ctx: CanvasRenderingContext2D, input: ShareImageI
   ctx.strokeStyle = colors.regionBorder
   ctx.lineWidth = 2
   for (const r of regions) ctx.stroke(r.path)
+  ctx.globalAlpha = 0.35
+  ctx.lineWidth = 1.5
+  ctx.setLineDash([8, 6])
+  for (const { frame: [w, s, e, n] } of INSETS) {
+    ctx.stroke(pathOf([[[[w, s], [e, s], [e, n], [w, n], [w, s]]]], project))
+  }
+  ctx.setLineDash([])
+  ctx.globalAlpha = 1
 
   // Totals in a row of equal columns under the map.
   const columns = input.totals.length

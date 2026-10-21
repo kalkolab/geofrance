@@ -1,12 +1,12 @@
 // Goals are fixed lists of places worked out from the reference data; progress comes from your visits.
 // A region or department counts once any commune in it is visited.
 
-import type { RefData } from './ref'
+import { isOverseas, type RefData } from './ref'
 
 export type GoalItem = { kind: 'region' | 'departement' | 'commune'; code: string }
 
 export type GoalTitle =
-  | { key: 'goalRegions' | 'goalDepartements' | 'goalPrefectures' | 'goalCapitals' }
+  | { key: 'goalRegions' | 'goalDepartements' | 'goalOverseas' | 'goalPrefectures' | 'goalCapitals' }
   | { key: 'goalCities'; count: number }
   | { key: 'goalRegionDeps'; region: string }
 
@@ -36,17 +36,25 @@ export function goalsFor(ref: RefData): Goal[] {
       title: { key: 'goalDepartements' },
       items: ref.departements.map((d) => ({ kind: 'departement', code: d.code })),
     },
+    {
+      id: 'overseas',
+      title: { key: 'goalOverseas' },
+      items: ref.departements.filter((d) => isOverseas(d.code)).map((d) => ({ kind: 'departement', code: d.code })),
+    },
     { id: 'prefectures', title: { key: 'goalPrefectures' }, items: communes(ref.departements.map((d) => d.prefecture)) },
     { id: 'capitals', title: { key: 'goalCapitals' }, items: communes(ref.regions.map((r) => r.capital)) },
     { id: 'cities10', title: { key: 'goalCities', count: 10 }, items: communes(largest.slice(0, 10).map((c) => c.code)) },
     { id: 'cities50', title: { key: 'goalCities', count: 50 }, items: communes(largest.slice(0, 50).map((c) => c.code)) },
   ].map((g) => ({ ...g, group: 'france' }) as Goal)
-  const regions: Goal[] = ref.regions.map((r) => ({
-    id: `region-${r.code}`,
-    title: { key: 'goalRegionDeps', region: r.name },
-    group: 'region',
-    items: ref.departements.filter((d) => d.region === r.code).map((d) => ({ kind: 'departement', code: d.code })),
-  }))
+  // Overseas regions have a single department, so they get no region goal of their own.
+  const regions: Goal[] = ref.regions
+    .map((r) => ({
+      id: `region-${r.code}`,
+      title: { key: 'goalRegionDeps', region: r.name } as GoalTitle,
+      group: 'region' as const,
+      items: ref.departements.filter((d) => d.region === r.code).map((d) => ({ kind: 'departement' as const, code: d.code })),
+    }))
+    .filter((g) => g.items.length > 1)
   return [...france.filter((g) => g.items.length), ...regions]
 }
 

@@ -1,5 +1,7 @@
 // Builds the reference data the app loads from public/data:
 //   ref.json                 regions, departments and communes of mainland France (incl. Corsica)
+//                            and the five overseas departments (Guadeloupe, Martinique, Guyane,
+//                            La Réunion, Mayotte); the other overseas collectivities are not departments
 //   regions.geojson          region boundaries
 //   departements.geojson     department boundaries
 //   communes/<dep>.geojson   commune boundaries, one file per department
@@ -18,7 +20,7 @@ const OUT = 'public/data'
 const DECIMALS = 4 // about 10 m, plenty for city-level lookups
 
 async function fetchCached(name) {
-  const path = `${CACHE}/${name}`
+  const path = `${CACHE}/${name.replaceAll('/', '_')}`
   try {
     return JSON.parse(await readFile(path, 'utf8'))
   } catch {
@@ -56,9 +58,10 @@ const cogRegions = require('@etalab/decoupage-administratif/data/regions.json')
 const cogDeps = require('@etalab/decoupage-administratif/data/departements.json')
 const cogCommunes = require('@etalab/decoupage-administratif/data/communes.json')
 
-const regions = cogRegions.filter((r) => r.zone === 'metro')
-const deps = cogDeps.filter((d) => d.zone === 'metro')
-const communes = cogCommunes.filter((c) => c.type === 'commune-actuelle' && c.zone === 'metro')
+const ZONES = new Set(['metro', 'drom'])
+const regions = cogRegions.filter((r) => ZONES.has(r.zone))
+const deps = cogDeps.filter((d) => ZONES.has(d.zone))
+const communes = cogCommunes.filter((c) => c.type === 'commune-actuelle' && ZONES.has(c.zone))
 const communeByCode = new Map(communes.map((c) => [c.code, c]))
 // Delegated/associated communes and municipal arrondissements point to the commune they belong to.
 const parentOf = new Map(
@@ -67,6 +70,48 @@ const parentOf = new Map(
 
 await mkdir(`${OUT}/communes`, { recursive: true })
 
+// Overseas departments come in one folder each; each is also its own region.
+const OVERSEAS = { 971: 'guadeloupe', 972: 'martinique', 973: 'guyane', 974: 'la-reunion', 976: 'mayotte' }
+const overseas = await Promise.all(
+  Object.entries(OVERSEAS).map(async ([code, slug]) => ({
+    code,
+    departement: await fetchCached(`departements/${code}-${slug}/departement-${code}-${slug}.geojson`),
+    communes: await fetchCached(`departements/${code}-${slug}/communes-${code}-${slug}.geojson`),
+  })),
+)
+// The overseas department outlines are full detail; simplify them like the mainland ones.
+function simplify(ring, tolerance) {
+  if (ring.length < 5) return ring
+  // A ring starts and ends on the same point, so also anchor the point farthest from it.
+  const far0 = ring.reduce((best, p, i) => (Math.hypot(p[0] - ring[0][0], p[1] - ring[0][1]) > Math.hypot(ring[best][0] - ring[0][0], ring[best][1] - ring[0][1]) ? i : best), 0)
+  const keep = new Uint8Array(ring.length)
+  keep[0] = keep[far0] = keep[ring.length - 1] = 1
+  const stack = [[0, far0], [far0, ring.length - 1]]
+  while (stack.length) {
+    const [a, b] = stack.pop()
+    const [ax, ay] = ring[a], [bx, by] = ring[b]
+    const dx = bx - ax, dy = by - ay
+    const length = Math.hypot(dx, dy) || 1
+    let far = -1, farthest = tolerance
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs(dy * (ring[i][0] - ax) - dx * (ring[i][1] - ay)) / length
+      if (d > farthest) (far = i), (farthest = d)
+    }
+    if (far >= 0) {
+      keep[far] = 1
+      stack.push([a, far], [far, b])
+    }
+  }
+  const out = ring.filter((_, i) => keep[i])
+  return out.length >= 4 ? out : ring
+}
+const overseasPolygons = (code) => {
+  const shape = overseas.find((o) => o.code === code).departement
+  return (shape.features ?? [shape])
+    .flatMap((f) => polygonsOf(f.geometry))
+    .map((polygon) => polygon.map((ring) => simplify(ring, 0.002)))
+}
+
 const regionShapes = await fetchCached('regions-version-simplifiee.geojson')
 const regionNames = new Map(regions.map((r) => [r.code, r.nom]))
 await writeFile(
@@ -74,7 +119,12 @@ await writeFile(
   collection(
     regionShapes.features
       .filter((f) => regionNames.has(f.properties.code))
-      .map((f) => feature({ code: f.properties.code, name: regionNames.get(f.properties.code) }, polygonsOf(f.geometry))),
+      .map((f) => feature({ code: f.properties.code, name: regionNames.get(f.properties.code) }, polygonsOf(f.geometry)))
+      .concat(
+        deps
+          .filter((d) => OVERSEAS[d.code])
+          .map((d) => feature({ code: d.region, name: regionNames.get(d.region) }, overseasPolygons(d.code))),
+      ),
   ),
 )
 
@@ -88,7 +138,10 @@ await writeFile(
       .map((f) => {
         const d = depByCode.get(f.properties.code)
         return feature({ code: d.code, name: d.nom, region: d.region }, polygonsOf(f.geometry))
-      }),
+      })
+      .concat(
+        deps.filter((d) => OVERSEAS[d.code]).map((d) => feature({ code: d.code, name: d.nom, region: d.region }, overseasPolygons(d.code))),
+      ),
   ),
 )
 
@@ -96,7 +149,7 @@ const communeShapes = await fetchCached('communes-version-simplifiee.geojson')
 const polygonsByCommune = new Map()
 let reassigned = 0
 const unmatched = []
-for (const f of communeShapes.features) {
+for (const f of [...communeShapes.features, ...overseas.flatMap((o) => o.communes.features)]) {
   let code = f.properties.code
   if (!communeByCode.has(code)) {
     code = parentOf.get(code)
@@ -135,7 +188,7 @@ const goalPlaces = new Set([
 await writeFile(
   `${OUT}/ref.json`,
   JSON.stringify({
-    version: 2,
+    version: 3,
     regions: regions.map((r) => [r.code, r.nom, r.chefLieu]),
     departements: deps.map((d) => [d.code, d.nom, d.region, d.chefLieu]),
     communes: communes.map((c) => [c.code, c.nom, c.departement, c.codesPostaux ?? [], c.population ?? 0]),

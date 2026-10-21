@@ -27,9 +27,9 @@ const once = <T,>(load: () => Promise<T>) => {
   return () => (value ??= load())
 }
 
-export const loadRef = once(async (): Promise<RefData> => parseRef(await getJson<RawRef>('ref.json?v=2')))
-export const loadRegions = once(() => getJson<FeatureCollection<RegionProps>>('regions.geojson'))
-export const loadDepartements = once(() => getJson<FeatureCollection<DepartementProps>>('departements.geojson'))
+export const loadRef = once(async (): Promise<RefData> => parseRef(await getJson<RawRef>('ref.json?v=3')))
+export const loadRegions = once(() => getJson<FeatureCollection<RegionProps>>('regions.geojson?v=3'))
+export const loadDepartements = once(() => getJson<FeatureCollection<DepartementProps>>('departements.geojson?v=3'))
 
 const communeFiles = new Map<string, Promise<FeatureCollection>>()
 export function loadCommunes(departement: string): Promise<FeatureCollection> {
