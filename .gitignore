@@ -4,3 +4,4 @@ dist
 public/data
 *.log
 .env.local
+*.tsbuildinfo
