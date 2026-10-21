@@ -67,15 +67,6 @@ const parentOf = new Map(
 
 await mkdir(`${OUT}/communes`, { recursive: true })
 
-await writeFile(
-  `${OUT}/ref.json`,
-  JSON.stringify({
-    regions: regions.map((r) => [r.code, r.nom]),
-    departements: deps.map((d) => [d.code, d.nom, d.region]),
-    communes: communes.map((c) => [c.code, c.nom, c.departement, c.codesPostaux ?? [], c.population ?? 0]),
-  }),
-)
-
 const regionShapes = await fetchCached('regions-version-simplifiee.geojson')
 const regionNames = new Map(regions.map((r) => [r.code, r.nom]))
 await writeFile(
@@ -127,6 +118,30 @@ for (const [code, polygons] of polygonsByCommune) {
 for (const [dep, features] of featuresByDep) {
   await writeFile(`${OUT}/communes/${dep}.geojson`, collection(features))
 }
+
+// A point inside each commune that goals point to on the map: prefectures, regional capitals and
+// the largest cities. The average of the largest ring's corners is close enough for a marker.
+const center = (polygons) => {
+  const ring = polygons.reduce((a, b) => (b[0].length > a[0].length ? b : a))[0]
+  const sum = ring.reduce(([x, y], [lon, lat]) => [x + lon, y + lat], [0, 0])
+  return round([sum[0] / ring.length, sum[1] / ring.length])
+}
+const goalPlaces = new Set([
+  ...deps.map((d) => d.chefLieu),
+  ...regions.map((r) => r.chefLieu),
+  ...[...communes].sort((a, b) => (b.population ?? 0) - (a.population ?? 0)).slice(0, 50).map((c) => c.code),
+])
+
+await writeFile(
+  `${OUT}/ref.json`,
+  JSON.stringify({
+    version: 2,
+    regions: regions.map((r) => [r.code, r.nom, r.chefLieu]),
+    departements: deps.map((d) => [d.code, d.nom, d.region, d.chefLieu]),
+    communes: communes.map((c) => [c.code, c.nom, c.departement, c.codesPostaux ?? [], c.population ?? 0]),
+    points: [...goalPlaces].filter((code) => polygonsByCommune.has(code)).map((code) => [code, ...center(polygonsByCommune.get(code))]),
+  }),
+)
 
 const missing = communes.filter((c) => !polygonsByCommune.has(c.code)).map((c) => c.code)
 console.log(

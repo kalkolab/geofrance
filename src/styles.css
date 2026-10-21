@@ -86,7 +86,8 @@ main { flex: 1; position: relative; overflow: auto; }
 .hover-label { position: absolute; transform: translate(12px, 12px); pointer-events: none; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.55rem; font-size: 0.85rem; line-height: 1.35; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); white-space: nowrap; z-index: 2; }
 .hover-label .muted { color: var(--muted); }
 .hover-label .tag { margin-left: 0.4rem; padding: 0 0.35rem; border-radius: 4px; background: var(--commune); color: #fff; font-size: 0.75rem; }
-.map-controls { position: absolute; top: 0.75rem; left: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.map-controls { position: absolute; top: 0.75rem; left: 0.75rem; right: 3.5rem; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5rem; pointer-events: none; }
+.map-controls > * { pointer-events: auto; }
 .segmented { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .segmented button { border: none; border-radius: 0; }
 .segmented button.active { background: var(--accent); color: var(--accent-text); }
@@ -159,4 +160,17 @@ main { flex: 1; position: relative; overflow: auto; }
 @media (max-width: 560px) {
   .headlines { grid-template-columns: 1fr; }
   .summary { order: 3; flex-basis: 100%; }
+  nav { flex-basis: 100%; }
+  nav button { flex: 1 1 auto; padding-inline: 0.35rem; font-size: 0.9rem; }
 }
+
+.goals { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.9rem; }
+.goal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; width: 100%; padding: 0; border: none; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; margin-bottom: 0.3rem; }
+.goal-title { font-weight: 600; }
+.goal.reached .bar > div { background: var(--success, #2f9e44); }
+.goal p { margin: 0.3rem 0 0; }
+.goal-missing { margin-top: 0.4rem; }
+.goal-missing button { margin-top: 0.5rem; }
+.badge { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; margin-right: 0.4rem; border-radius: 50%; background: #2f9e44; color: #fff; font-size: 0.75rem; }
+.goal-banner { flex-basis: 100%; display: flex; justify-content: space-between; gap: 0.75rem; align-items: center; padding: 0.45rem 0.7rem; font-size: 0.85rem; border-radius: 8px; background: var(--surface); border: 1px solid #d6336c; }
+.toast { position: fixed; left: 50%; bottom: 2.5rem; transform: translateX(-50%); width: max-content; max-width: calc(100% - 2rem); text-align: center; padding: 0.7rem 1rem; border-radius: 10px; background: #2f9e44; color: #fff; font-weight: 600; box-shadow: 0 4px 16px rgb(0 0 0 / 0.2); z-index: 10; }
