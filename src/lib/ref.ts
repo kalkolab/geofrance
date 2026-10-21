@@ -3,12 +3,14 @@
 export interface Region {
   code: string
   name: string
+  capital?: string // commune code of the regional capital
 }
 
 export interface Departement {
   code: string
   name: string
   region: string
+  prefecture?: string // commune code
 }
 
 export interface Commune {
@@ -27,12 +29,14 @@ export interface RefData {
   region: Map<string, Region>
   departement: Map<string, Departement>
   commune: Map<string, Commune>
+  point: Map<string, [number, number]> // [lon, lat] for prefectures, regional capitals and large cities
 }
 
 export interface RawRef {
-  regions: [string, string][]
-  departements: [string, string, string][]
+  regions: [string, string, string?][]
+  departements: [string, string, string, string?][]
   communes: [string, string, string, string[], number][]
+  points?: [string, number, number][]
 }
 
 export const normalize = (s: string) =>
@@ -47,8 +51,8 @@ export const normalize = (s: string) =>
     .trim()
 
 export function parseRef(raw: RawRef): RefData {
-  const regions = raw.regions.map(([code, name]) => ({ code, name }))
-  const departements = raw.departements.map(([code, name, region]) => ({ code, name, region }))
+  const regions = raw.regions.map(([code, name, capital]) => ({ code, name, capital }))
+  const departements = raw.departements.map(([code, name, region, prefecture]) => ({ code, name, region, prefecture }))
   const communes = raw.communes.map(([code, name, departement, postcodes, population]) => ({
     code,
     name,
@@ -64,6 +68,7 @@ export function parseRef(raw: RawRef): RefData {
     region: new Map(regions.map((r) => [r.code, r])),
     departement: new Map(departements.map((d) => [d.code, d])),
     commune: new Map(communes.map((c) => [c.code, c])),
+    point: new Map((raw.points ?? []).map(([code, lon, lat]) => [code, [lon, lat]])),
   }
 }
 

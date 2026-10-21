@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { geocoder, loadCommunes, loadDepartements, loadRegions } from '../data'
 import { useT } from '../i18n'
 import type { Location } from '../lib/geocoder'
+import type { GoalItem } from '../lib/goals'
 import type { RefData } from '../lib/ref'
 import type { Stats } from '../lib/stats'
 
@@ -20,6 +21,7 @@ export const COLORS = {
   border: '#ffffff',
   regionBorder: '#4a5560',
   selection: '#e8590c',
+  goal: '#d6336c',
   hover: '#1d232a',
 }
 
@@ -48,10 +50,11 @@ interface Props {
   visited: Set<string>
   level: Level
   selected: { departement: string; commune: string | null } | null
+  highlight: GoalItem[] | null // places still to visit for the goal shown on the map
   onPick(lon: number, lat: number): void
 }
 
-export function FranceMap({ geo, stats, visited, level, selected, onPick }: Props) {
+export function FranceMap({ geo, stats, visited, level, selected, highlight, onPick }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibre | null>(null)
   const onPickRef = useRef(onPick)
@@ -94,6 +97,7 @@ export function FranceMap({ geo, stats, visited, level, selected, onPick }: Prop
       map.addSource('visited-communes', { type: 'geojson', data: EMPTY })
       map.addSource('selection', { type: 'geojson', data: EMPTY })
       map.addSource('hover', { type: 'geojson', data: EMPTY })
+      map.addSource('goal-places', { type: 'geojson', data: EMPTY })
       const share = ['coalesce', ['feature-state', 'share'], 0]
       const [s1, s2, s3, s4, s5] = COLORS.regionSteps
       map.addLayer({
@@ -129,6 +133,30 @@ export function FranceMap({ geo, stats, visited, level, selected, onPick }: Prop
         type: 'line',
         source: 'regions',
         paint: { 'line-color': COLORS.regionBorder, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 9, 2.5] },
+      })
+      const missing = ['case', ['boolean', ['feature-state', 'missing'], false], 1, 0] as never
+      map.addLayer({
+        id: 'departements-goal',
+        type: 'line',
+        source: 'departements',
+        paint: { 'line-color': COLORS.goal, 'line-width': 2.5, 'line-opacity': missing },
+      })
+      map.addLayer({
+        id: 'regions-goal',
+        type: 'line',
+        source: 'regions',
+        paint: { 'line-color': COLORS.goal, 'line-width': 3, 'line-opacity': missing },
+      })
+      map.addLayer({
+        id: 'goal-places',
+        type: 'circle',
+        source: 'goal-places',
+        paint: {
+          'circle-color': COLORS.goal,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 10, 7],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 1.5,
+        },
       })
       map.addLayer({
         id: 'hover-line',
@@ -206,6 +234,23 @@ export function FranceMap({ geo, stats, visited, level, selected, onPick }: Prop
       cancelled = true
     }
   }, [ready, selected])
+
+  // Mark the places a goal still needs: outlines for departments and regions, dots for communes.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    const items = highlight ?? []
+    const codes = (kind: GoalItem['kind']) => new Set(items.filter((i) => i.kind === kind).map((i) => i.code))
+    const deps = codes('departement')
+    const regions = codes('region')
+    for (const d of geo.departements) map.setFeatureState({ source: 'departements', id: d.code }, { missing: deps.has(d.code) })
+    for (const r of geo.regions) map.setFeatureState({ source: 'regions', id: r.code }, { missing: regions.has(r.code) })
+    const features = [...codes('commune')].flatMap((code) => {
+      const point = geo.point.get(code)
+      return point ? [{ type: 'Feature' as const, properties: { code }, geometry: { type: 'Point' as const, coordinates: point } }] : []
+    })
+    ;(map.getSource('goal-places') as GeoJSONSource).setData({ type: 'FeatureCollection', features })
+  }, [ready, geo, highlight])
 
   // Outline the commune (or, in the regions view, the region) under the pointer.
   const byRegion = level === 'regions'
