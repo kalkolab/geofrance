@@ -148,6 +148,8 @@ export const ru: Messages = {
   goalRegions: 'Все регионы',
   goalDepartements: 'Все департаменты',
   goalPrefectures: 'Все префектуры',
+  goalMainlandRegions: 'Все регионы материковой Франции',
+  goalMainlandDepartements: 'Все департаменты материковой Франции',
   goalOverseas: 'Все заморские департаменты',
   goalCapitals: 'Все столицы регионов',
   goalCities: { other: '{count} крупнейших городов' },

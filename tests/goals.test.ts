@@ -33,6 +33,8 @@ describe('goals', () => {
     expect(goalsFor(ref).map((g) => g.id)).toEqual([
       'regions',
       'departements',
+      'mainland-regions',
+      'mainland-departements',
       'overseas',
       'prefectures',
       'capitals',
@@ -47,6 +49,8 @@ describe('goals', () => {
     const g = byId([{ commune: '35288', date: '2023-05-01' }])
     expect(g.get('regions')).toMatchObject({ done: 1, total: 3, reached: false })
     expect(g.get('prefectures')).toMatchObject({ done: 0, total: 5 })
+    expect(g.get('mainland-regions')).toMatchObject({ done: 1, total: 2 })
+    expect(g.get('mainland-departements')).toMatchObject({ done: 1, total: 4 })
     expect(g.get('region-53')!.missing).toEqual([{ kind: 'departement', code: '29' }])
   })
 

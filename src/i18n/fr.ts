@@ -138,6 +138,8 @@ export const fr: Messages = {
   goalRegions: 'Toutes les régions',
   goalDepartements: 'Tous les départements',
   goalPrefectures: 'Toutes les préfectures',
+  goalMainlandRegions: 'Toutes les régions de France métropolitaine',
+  goalMainlandDepartements: 'Tous les départements de France métropolitaine',
   goalOverseas: 'Tous les départements d’outre-mer',
   goalCapitals: 'Tous les chefs-lieux de région',
   goalCities: { other: 'Les {count} plus grandes villes' },
