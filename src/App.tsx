@@ -5,6 +5,7 @@ import { goalTitle } from './components/goalTitle'
 import { GoalsView } from './components/GoalsView'
 import { PlacePanel } from './components/PlacePanel'
 import { SettingsView } from './components/SettingsView'
+import { ShareMap } from './components/ShareMap'
 import { StatsView } from './components/StatsView'
 import { SyncButton } from './components/SyncButton'
 import { geocoder, loadRef } from './data'
@@ -16,7 +17,7 @@ import type { RefData } from './lib/ref'
 import { computeStats } from './lib/stats'
 
 type Tab = 'map' | 'stats' | 'goals' | 'settings'
-type Overlay = { kind: 'place'; location: Location | null } | { kind: 'add'; commune?: string } | null
+type Overlay = { kind: 'place'; location: Location | null } | { kind: 'add'; commune?: string } | { kind: 'share' } | null
 
 export function App() {
   const [geo, setGeo] = useState<RefData>()
@@ -111,6 +112,7 @@ export function App() {
             <button className="primary" onClick={() => setOverlay({ kind: 'add' })}>
               {t('addAVisit')}
             </button>
+            <button onClick={() => setOverlay({ kind: 'share' })}>{t('shareMap')}</button>
             {shownGoal && (
               <div className="goal-banner">
                 <span>
@@ -130,6 +132,15 @@ export function App() {
               location={overlay.location}
               visits={visits}
               onAdd={() => setOverlay({ kind: 'add', commune: overlay.location?.commune ?? undefined })}
+              onClose={() => setOverlay(null)}
+            />
+          )}
+          {overlay?.kind === 'share' && (
+            <ShareMap
+              stats={stats}
+              visited={visited}
+              level={level}
+              goals={{ reached: goals.filter((g) => g.reached).length, total: goals.length }}
               onClose={() => setOverlay(null)}
             />
           )}
