@@ -26,7 +26,7 @@ export const fr: Messages = {
   legendShare: 'Départements visités',
   hoverVisited: 'Visitée',
 
-  outsideFrance: 'Ce point est en dehors de la France métropolitaine.',
+  outsideFrance: 'Ce point est en dehors de la France.',
   close: 'Fermer',
   cancel: 'Annuler',
   departementCode: 'Département {code}',
@@ -87,7 +87,7 @@ export const fr: Messages = {
   comingNextBody: 'Import depuis Google Photos.',
   about: 'À propos',
   aboutBody:
-    'France métropolitaine, Corse comprise : 13 régions, 96 départements et environ 34 750 communes. Codes et noms de l’INSEE (COG), contours de l’IGN ADMIN EXPRESS via france-geojson, sous Licence Ouverte.',
+    'La France métropolitaine avec la Corse, et les cinq départements d’outre-mer (Guadeloupe, Martinique, Guyane, La Réunion, Mayotte) : 18 régions, 101 départements et environ 34 875 communes. Les départements d’outre-mer sont dans des cadres sous la métropole. Codes et noms de l’INSEE (COG), contours de l’IGN ADMIN EXPRESS via france-geojson, sous Licence Ouverte.',
 
   googleAccount: 'Compte Google',
   signInNotConfigured: 'La connexion Google n’est pas configurée pour cette copie de l’application.',
@@ -118,18 +118,18 @@ export const fr: Messages = {
   timelineToAdd: 'À ajouter : {communes}.',
   timelineToAddEarlier: 'À ajouter : {communes}, et une première visite plus ancienne pour {earlier}.',
   timelineOnlyFirst: 'Seule la première visite de chaque commune est conservée.',
-  timelineOutside: 'Hors de France métropolitaine, ignorés : {stops}',
+  timelineOutside: 'Hors de France, ignorés : {stops}',
   timelineDuplicates: 'Dans des communes déjà comptées, ignorés : {stops}',
   addCommunes: { one: 'Ajouter {count} commune', other: 'Ajouter {count} communes' },
 
   csvTitle: 'Importer des lieux depuis un fichier CSV',
   csvHelp:
-    'Un fichier avec une ligne d’en-tête et des colonnes `lat` et `lon`, séparées par des points-virgules ou des virgules. Chaque point en France métropolitaine marque sa commune comme visitée (date inconnue). S’il y a une colonne `been`, seules les lignes marquées « been » sont utilisées.',
+    'Un fichier avec une ligne d’en-tête et des colonnes `lat` et `lon`, séparées par des points-virgules ou des virgules. Chaque point en France marque sa commune comme visitée (date inconnue). S’il y a une colonne `been`, seules les lignes marquées « been » sont utilisées.',
   csvChoose: 'Choisir le fichier CSV',
   csvChecking: 'Vérification de {places}…',
   csvAdded: 'Ajout terminé : {communes}.',
   csvRead: '**{file}** : {places} dans le fichier, {communes} à ajouter.',
-  csvOutside: 'Hors de France métropolitaine, ignorés : {places}',
+  csvOutside: 'Hors de France, ignorés : {places}',
   csvAlready: 'Déjà dans vos visites, ignorées : {communes}',
   csvNotBeen: 'Sans la mention « been », ignorées : {rows}',
   csvInvalid: '{rows} sans coordonnées valides (ligne {lines})',
@@ -138,6 +138,7 @@ export const fr: Messages = {
   goalRegions: 'Toutes les régions',
   goalDepartements: 'Tous les départements',
   goalPrefectures: 'Toutes les préfectures',
+  goalOverseas: 'Tous les départements d’outre-mer',
   goalCapitals: 'Tous les chefs-lieux de région',
   goalCities: { other: 'Les {count} plus grandes villes' },
   goalRegionDeps: 'Tous les départements : {region}',

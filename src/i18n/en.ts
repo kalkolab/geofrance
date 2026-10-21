@@ -36,7 +36,7 @@ export const en = {
   legendShare: 'Departments visited',
   hoverVisited: 'Visited',
 
-  outsideFrance: 'This point is outside mainland France.',
+  outsideFrance: 'This point is outside France.',
   close: 'Close',
   cancel: 'Cancel',
   departementCode: 'Department {code}',
@@ -90,7 +90,7 @@ export const en = {
   comingNextBody: 'Google Photos import.',
   about: 'About',
   aboutBody:
-    'Mainland France including Corsica: 13 regions, 96 departments and about 34,750 communes. Codes and names from INSEE (COG), boundaries from IGN ADMIN EXPRESS via france-geojson, under the Licence Ouverte.',
+    'Mainland France with Corsica, and the five overseas departments (Guadeloupe, Martinique, Guyane, La Réunion, Mayotte): 18 regions, 101 departments and about 34,875 communes. The overseas departments are shown in boxes under the mainland. Codes and names from INSEE (COG), boundaries from IGN ADMIN EXPRESS via france-geojson, under the Licence Ouverte.',
 
   googleAccount: 'Google account',
   signInNotConfigured: 'Google sign-in is not set up for this copy of the app.',
@@ -121,18 +121,18 @@ export const en = {
   timelineToAdd: '{communes} to add.',
   timelineToAddEarlier: '{communes} to add, and {earlier} you visited earlier than recorded.',
   timelineOnlyFirst: 'Only the first visit to each commune is kept.',
-  timelineOutside: '{stops} outside mainland France, skipped',
+  timelineOutside: '{stops} outside France, skipped',
   timelineDuplicates: '{stops} in communes already counted, skipped',
   addCommunes: { one: 'Add {count} commune', other: 'Add {count} communes' },
 
   csvTitle: 'Import places from a CSV file',
   csvHelp:
-    'A file with a header row and `lat` and `lon` columns, separated by semicolons or commas. Each point in mainland France marks its commune as visited (date unknown). If there is a `been` column, only rows marked "been" are used.',
+    'A file with a header row and `lat` and `lon` columns, separated by semicolons or commas. Each point in France marks its commune as visited (date unknown). If there is a `been` column, only rows marked "been" are used.',
   csvChoose: 'Choose CSV file',
   csvChecking: 'Checking {places}…',
   csvAdded: 'Added {communes} to your visits.',
   csvRead: '**{file}**: {places} read, {communes} to add.',
-  csvOutside: '{places} outside mainland France, skipped',
+  csvOutside: '{places} outside France, skipped',
   csvAlready: '{communes} already in your visits, skipped',
   csvNotBeen: '{rows} not marked "been", skipped',
   csvInvalid: '{rows} without valid coordinates (line {lines})',
@@ -141,6 +141,7 @@ export const en = {
   goalRegions: 'All regions',
   goalDepartements: 'All departments',
   goalPrefectures: 'All prefectures',
+  goalOverseas: 'All overseas departments',
   goalCapitals: 'All regional capitals',
   goalCities: { other: 'The {count} largest cities' },
   goalRegionDeps: 'Every department in {region}',

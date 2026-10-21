@@ -1,4 +1,7 @@
-// Reference lists of regions, departments and communes (mainland France, Corsica included).
+// Reference lists of regions, departments and communes: mainland France with Corsica, and the
+// five overseas departments (971 Guadeloupe, 972 Martinique, 973 Guyane, 974 La Réunion, 976 Mayotte).
+
+export const isOverseas = (departement: string) => departement.startsWith('97')
 
 export interface Region {
   code: string

@@ -4,7 +4,7 @@ import type { Geocoder } from './geocoder'
 export interface ImportPlan {
   communes: { code: string; places: string[] }[] // communes not visited yet, in file order
   alreadyVisited: number // communes found that are already in your visits
-  outside: number // points outside mainland France
+  outside: number // points outside France
 }
 
 // Turns points into the communes they fall in, without saving anything.

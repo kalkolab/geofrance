@@ -36,7 +36,7 @@ export const ru: Messages = {
   legendShare: 'Посещённые департаменты',
   hoverVisited: 'Посещено',
 
-  outsideFrance: 'Эта точка за пределами материковой Франции.',
+  outsideFrance: 'Эта точка за пределами Франции.',
   close: 'Закрыть',
   cancel: 'Отмена',
   departementCode: 'Департамент {code}',
@@ -92,7 +92,7 @@ export const ru: Messages = {
   comingNextBody: 'Импорт из Google Фото.',
   about: 'О приложении',
   aboutBody:
-    'Материковая Франция вместе с Корсикой: 13 регионов, 96 департаментов и около 34 750 коммун. Коды и названия от INSEE (COG), границы от IGN ADMIN EXPRESS через france-geojson, по лицензии Licence Ouverte.',
+    'Материковая Франция с Корсикой и пять заморских департаментов (Гваделупа, Мартиника, Гвиана, Реюньон, Майотта): 18 регионов, 101 департамент и около 34 875 коммун. Заморские департаменты показаны в рамках под материком. Коды и названия от INSEE (COG), границы от IGN ADMIN EXPRESS через france-geojson, по лицензии Licence Ouverte.',
 
   googleAccount: 'Аккаунт Google',
   signInNotConfigured: 'Вход через Google не настроен для этой копии приложения.',
@@ -123,7 +123,7 @@ export const ru: Messages = {
   timelineToAdd: 'Будет добавлено: {communes}.',
   timelineToAddEarlier: 'Будет добавлено: {communes}, и более ранний первый визит для: {earlier}.',
   timelineOnlyFirst: 'Хранится только первый визит в каждую коммуну.',
-  timelineOutside: 'За пределами материковой Франции, пропущено: {stops}',
+  timelineOutside: 'За пределами Франции, пропущено: {stops}',
   timelineDuplicates: 'В уже учтённых коммунах, пропущено: {stops}',
   addCommunes: {
     one: 'Добавить {count} коммуну',
@@ -134,12 +134,12 @@ export const ru: Messages = {
 
   csvTitle: 'Импорт мест из файла CSV',
   csvHelp:
-    'Файл со строкой заголовков и столбцами `lat` и `lon`, разделёнными точкой с запятой или запятой. Каждая точка в материковой Франции отмечает свою коммуну как посещённую (дата неизвестна). Если есть столбец `been`, используются только строки с пометкой «been».',
+    'Файл со строкой заголовков и столбцами `lat` и `lon`, разделёнными точкой с запятой или запятой. Каждая точка во Франции отмечает свою коммуну как посещённую (дата неизвестна). Если есть столбец `been`, используются только строки с пометкой «been».',
   csvChoose: 'Выбрать файл CSV',
   csvChecking: 'Проверка: {places}…',
   csvAdded: 'Добавлено к вашим визитам: {communes}.',
   csvRead: '**{file}**: в файле {places}, будет добавлено: {communes}.',
-  csvOutside: 'За пределами материковой Франции, пропущено: {places}',
+  csvOutside: 'За пределами Франции, пропущено: {places}',
   csvAlready: 'Уже среди ваших визитов, пропущено: {communes}',
   csvNotBeen: 'Без пометки «been», пропущено: {rows}',
   csvInvalid: 'Без правильных координат: {rows} (строка {lines})',
@@ -148,6 +148,7 @@ export const ru: Messages = {
   goalRegions: 'Все регионы',
   goalDepartements: 'Все департаменты',
   goalPrefectures: 'Все префектуры',
+  goalOverseas: 'Все заморские департаменты',
   goalCapitals: 'Все столицы регионов',
   goalCities: { other: '{count} крупнейших городов' },
   goalRegionDeps: 'Все департаменты: {region}',

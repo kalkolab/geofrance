@@ -7,7 +7,7 @@ export interface VisitPlan {
   newCommunes: number // communes that have no visit at all yet
   earlier: number // communes already visited, where the file has an earlier first visit
   stops: number
-  outside: number // stops outside mainland France
+  outside: number // stops outside France
   duplicates: number // stops that add nothing: not the first in their commune
   firstDate: string | null
   lastDate: string | null
