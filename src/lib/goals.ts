@@ -6,7 +6,7 @@ import { isOverseas, type RefData } from './ref'
 export type GoalItem = { kind: 'region' | 'departement' | 'commune'; code: string }
 
 export type GoalTitle =
-  | { key: 'goalRegions' | 'goalDepartements' | 'goalOverseas' | 'goalPrefectures' | 'goalCapitals' }
+  | { key: 'goalRegions' | 'goalDepartements' | 'goalMainlandRegions' | 'goalMainlandDepartements' | 'goalOverseas' | 'goalPrefectures' | 'goalCapitals' }
   | { key: 'goalCities'; count: number }
   | { key: 'goalRegionDeps'; region: string }
 
@@ -28,6 +28,8 @@ export interface GoalProgress extends Goal {
 export function goalsFor(ref: RefData): Goal[] {
   const communes = (codes: (string | undefined)[]): GoalItem[] =>
     codes.filter((c): c is string => !!c && ref.commune.has(c)).map((code) => ({ kind: 'commune', code }))
+  const mainlandDeps = ref.departements.filter((d) => !isOverseas(d.code))
+  const mainlandRegions = new Set(mainlandDeps.map((d) => d.region))
   const largest = [...ref.communes].sort((a, b) => b.population - a.population)
   const france: Goal[] = [
     { id: 'regions', title: { key: 'goalRegions' }, items: ref.regions.map((r) => ({ kind: 'region', code: r.code })) },
@@ -35,6 +37,16 @@ export function goalsFor(ref: RefData): Goal[] {
       id: 'departements',
       title: { key: 'goalDepartements' },
       items: ref.departements.map((d) => ({ kind: 'departement', code: d.code })),
+    },
+    {
+      id: 'mainland-regions',
+      title: { key: 'goalMainlandRegions' },
+      items: ref.regions.filter((r) => mainlandRegions.has(r.code)).map((r) => ({ kind: 'region', code: r.code })),
+    },
+    {
+      id: 'mainland-departements',
+      title: { key: 'goalMainlandDepartements' },
+      items: mainlandDeps.map((d) => ({ kind: 'departement', code: d.code })),
     },
     {
       id: 'overseas',

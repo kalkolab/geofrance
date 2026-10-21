@@ -141,6 +141,8 @@ export const en = {
   goalRegions: 'All regions',
   goalDepartements: 'All departments',
   goalPrefectures: 'All prefectures',
+  goalMainlandRegions: 'All regions of mainland France',
+  goalMainlandDepartements: 'All departments of mainland France',
   goalOverseas: 'All overseas departments',
   goalCapitals: 'All regional capitals',
   goalCities: { other: 'The {count} largest cities' },

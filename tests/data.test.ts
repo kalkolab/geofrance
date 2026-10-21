@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { Geocoder } from '../src/lib/geocoder'
+import { goalsFor } from '../src/lib/goals'
 import { parseRef } from '../src/lib/ref'
 
 const dir = 'public/data'
@@ -20,6 +21,13 @@ describe.skipIf(!existsSync(`${dir}/ref.json`))('generated data', () => {
     expect(geo.communes.length).toBeGreaterThan(34000)
     expect(geo.departement.has('2A') && geo.departement.has('2B')).toBe(true)
     expect(geo.departements.filter((d) => d.code.startsWith('97')).map((d) => d.code)).toEqual(['971', '972', '973', '974', '976'])
+  })
+
+  it('has mainland goals of 13 regions and 96 departments', () => {
+    const goals = new Map(goalsFor(geo).map((g) => [g.id, g.items.length]))
+    expect(goals.get('mainland-regions')).toBe(13)
+    expect(goals.get('mainland-departements')).toBe(96)
+    expect(goals.get('overseas')).toBe(5)
   })
 
   it.each([

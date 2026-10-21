@@ -143,6 +143,8 @@ export const uk: Messages = {
   goalRegions: 'Усі регіони',
   goalDepartements: 'Усі департаменти',
   goalPrefectures: 'Усі префектури',
+  goalMainlandRegions: 'Усі регіони материкової Франції',
+  goalMainlandDepartements: 'Усі департаменти материкової Франції',
   goalOverseas: 'Усі заморські департаменти',
   goalCapitals: 'Усі столиці регіонів',
   goalCities: { other: '{count} найбільших міст' },
