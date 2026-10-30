@@ -70,6 +70,8 @@ export function StatsView({ geo, stats, visits }: Props) {
         </ul>
       </section>
 
+      <DepartementList geo={geo} stats={stats} />
+
       <section>
         <h2>{t('yourVisits')}</h2>
         {sorted.length === 0 ? (
@@ -102,5 +104,55 @@ export function StatsView({ geo, stats, visits }: Props) {
         )}
       </section>
     </div>
+  )
+}
+
+// Corsica's 2A and 2B come between 19 and 21, where department 20 used to be.
+const codeOrder = (code: string) => (code === '2A' ? 20.1 : code === '2B' ? 20.2 : Number(code))
+
+function DepartementList({ geo, stats }: { geo: RefData; stats: Stats }) {
+  const t = useT()
+  const [sort, setSort] = useState<'code' | 'name'>('code')
+  const rows = [...geo.departements].sort((a, b) =>
+    sort === 'code' ? codeOrder(a.code) - codeOrder(b.code) : a.name.localeCompare(b.name, 'fr'),
+  )
+  const header = (key: 'code' | 'name', label: MessageKey) => (
+    <button className={`link sort${sort === key ? ' active' : ''}`} onClick={() => setSort(key)} aria-pressed={sort === key}>
+      {t(label)}
+      {sort === key && ' ↓'}
+    </button>
+  )
+
+  return (
+    <section>
+      <h2>{t('departementList')}</h2>
+      <table className="departements">
+        <thead>
+          <tr>
+            <th>{header('code', 'columnCode')}</th>
+            <th>{header('name', 'columnDepartement')}</th>
+            <th className="region">{t('columnRegion')}</th>
+            <th>{t('columnVisited')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((d) => {
+            const communes = stats.communesByDepartement.get(d.code) ?? 0
+            const region = geo.region.get(d.region)?.name
+            return (
+              <tr key={d.code} className={communes ? 'visited' : undefined}>
+                <td className="code">{d.code}</td>
+                <td>
+                  {d.name}
+                  <div className="muted region-inline">{region}</div>
+                </td>
+                <td className="region muted">{region}</td>
+                <td>{communes ? `✓ ${t('communesCount', { count: communes })}` : <span className="muted">{t('legendNone')}</span>}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </section>
   )
 }
